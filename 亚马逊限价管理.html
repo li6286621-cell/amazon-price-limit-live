@@ -1,0 +1,2558 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>亚马逊限价管理</title>
+  <style>
+    :root {
+      --bg: #f5f7fa;
+      --card: #ffffff;
+      --line: #ebeef5;
+      --text: #303133;
+      --sub-text: #606266;
+      --blue: #409eff;
+      --blue-dark: #2f8de2;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { height: 100%; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 14px/1.4 "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+    }
+
+    .layout {
+      display: flex;
+      height: calc(100vh - 52px);
+      min-height: calc(100vh - 52px);
+    }
+
+    .sidebar {
+      width: 140px;
+      background: #fff;
+      border-right: 1px solid var(--line);
+      padding-top: 10px;
+    }
+
+    .menu-item {
+      display: block;
+      padding: 10px 12px;
+      color: #303133;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .main {
+      flex: 1;
+      min-width: 0;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .top-bar {
+      height: 52px;
+      background: #2d8cf0;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      padding: 0 18px;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .container {
+      padding: 14px 16px 20px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .panel-head {
+      height: 38px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-bottom: none;
+      display: flex;
+      align-items: flex-end;
+      padding: 0 14px;
+      flex-shrink: 0;
+    }
+
+    .panel-head-title {
+      color: #2f6fd6;
+      font-weight: 600;
+      padding: 0 2px 9px;
+      border-bottom: 2px solid #2f6fd6;
+      line-height: 1;
+    }
+
+    .panel-tab {
+      border: none;
+      background: transparent;
+      color: #606266;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 0 2px 9px;
+      margin-right: 18px;
+      cursor: pointer;
+      line-height: 1;
+      border-bottom: 2px solid transparent;
+      font-family: inherit;
+    }
+
+    .panel-tab:hover { color: #2f6fd6; }
+
+    .panel-tab.active {
+      color: #2f6fd6;
+      border-bottom-color: #2f6fd6;
+    }
+
+    .module-section {
+      display: none;
+      flex: 1;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .module-section.active { display: flex; }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      box-shadow: 0 1px 1px rgba(0, 0, 0, 0.02);
+    }
+
+    .filter-panel {
+      padding: 14px;
+      margin-bottom: 12px;
+      flex-shrink: 0;
+      overflow: visible;
+      position: relative;
+      z-index: 20;
+    }
+
+    .filter-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 12px;
+      align-items: flex-end;
+    }
+
+    .search-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      padding-bottom: 1px;
+    }
+
+    .extra-actions {
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .form-item input,
+    .form-item select {
+      width: 260px;
+      height: 32px;
+      border: 1px solid #dcdfe6;
+      border-radius: 2px;
+      padding: 0 10px;
+      outline: none;
+      background: #fff;
+      color: var(--text);
+    }
+
+    .form-item input::placeholder { color: #a8abb2; }
+
+    .form-item select:has(option[value=""]:checked),
+    .form-item select.placeholder {
+      color: #a8abb2;
+    }
+
+    .form-item select option { color: var(--text); }
+
+    .form-item input:focus,
+    .form-item select:focus { border-color: var(--blue); }
+
+    .btn {
+      border: 1px solid #dcdfe6;
+      background: #fff;
+      color: var(--text);
+      height: 32px;
+      padding: 0 14px;
+      border-radius: 2px;
+      cursor: pointer;
+    }
+
+    .btn:hover { border-color: #c0c4cc; }
+
+    .btn-primary {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--blue-dark);
+      border-color: var(--blue-dark);
+    }
+
+    .btn-danger {
+      background: #fff;
+      border-color: #f56c6c;
+      color: #f56c6c;
+    }
+
+    .btn-danger:hover {
+      background: #fef0f0;
+      border-color: #f56c6c;
+    }
+
+    .table-panel {
+      padding: 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .table-wrap {
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
+      background: #fff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 13px;
+    }
+
+    thead th {
+      background: #f8f9fb;
+      color: #606266;
+      font-weight: 600;
+      border-bottom: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+      padding: 10px 8px;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    tbody td {
+      border-bottom: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+      padding: 10px 8px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: #303133;
+    }
+
+    thead th:last-child,
+    tbody td:last-child { border-right: none; }
+
+    tbody tr:hover { background: #f5faff; }
+
+    .checkbox-cell {
+      width: 42px;
+      text-align: center;
+      padding-left: 8px !important;
+      padding-right: 8px !important;
+    }
+
+    .expand-cell {
+      width: 36px;
+      text-align: center;
+      padding-left: 4px !important;
+      padding-right: 4px !important;
+    }
+
+    .status { font-size: 13px; color: #303133; font-weight: 400; }
+
+    .link-btn {
+      border: none;
+      background: transparent;
+      color: var(--blue);
+      cursor: pointer;
+      padding: 0;
+      margin-right: 10px;
+    }
+
+    .link-btn:hover {
+      color: var(--blue-dark);
+      text-decoration: underline;
+    }
+
+    .link-btn:disabled {
+      color: #c0c4cc;
+      cursor: not-allowed;
+      text-decoration: none;
+    }
+
+    .link-btn.is-view {
+      color: #c0c4cc;
+    }
+
+    .link-btn.is-view:hover {
+      color: #909399;
+      text-decoration: underline;
+    }
+
+    .expand-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      margin: 0;
+      border: none;
+      background: transparent;
+      color: #c0c4cc;
+      font-size: 16px;
+      line-height: 1;
+      cursor: pointer;
+      vertical-align: middle;
+      padding: 0;
+      flex-shrink: 0;
+      transition: transform 0.15s ease, color 0.15s ease;
+    }
+
+    .expand-btn::before {
+      content: "›";
+      display: block;
+      font-weight: 700;
+      transform: scale(1.2, 1.4);
+    }
+
+    .expand-btn:hover { color: #909399; }
+
+    .parent-row.is-expanded .expand-btn {
+      color: #909399;
+      transform: rotate(90deg);
+    }
+
+    .child-detail-row td {
+      padding: 0;
+      background: #fafbfc;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .child-detail-wrap {
+      padding: 14px 16px 18px;
+      display: flex;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .child-table {
+      width: auto;
+      min-width: 1680px;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 13px;
+      background: #fff;
+      border: 1px solid var(--line);
+    }
+
+    .child-table th {
+      background: #f0f2f5;
+      color: #909399;
+      font-weight: 600;
+      font-size: 12px;
+      border-bottom: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+      padding: 8px 12px;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .child-table td {
+      border-bottom: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+      padding: 8px 12px;
+      color: #606266;
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    .child-table th:last-child,
+    .child-table td:last-child { border-right: none; }
+
+    .child-table tr:last-child td { border-bottom: none; }
+
+    .child-table th:nth-child(1),
+    .child-table td:nth-child(1) {
+      width: 720px;
+    }
+
+    .child-table th:nth-child(2),
+    .child-table td:nth-child(2) {
+      width: 560px;
+    }
+
+    .child-price {
+      color: #67c23a;
+      font-weight: 600;
+    }
+
+    .product-thumb {
+      width: 48px;
+      height: 48px;
+      object-fit: cover;
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      background: #f5f7fa;
+      vertical-align: middle;
+    }
+
+    .product-info-lines,
+    .asin-lines {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      white-space: normal;
+      line-height: 1.35;
+    }
+
+    .product-info-lines .sub-line,
+    .asin-lines .sub-line {
+      color: #909399;
+      font-size: 12px;
+    }
+
+    .footer-tip {
+      padding: 10px 14px;
+      color: #909399;
+      font-size: 12px;
+      border-top: 1px solid var(--line);
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: auto;
+      flex-shrink: 0;
+    }
+
+    .pager { color: #909399; white-space: nowrap; }
+
+    .mask {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.35);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .mask.show { display: flex; }
+
+    .mask.mask-log { z-index: 1200; }
+
+    .modal {
+      width: 430px;
+      background: #fff;
+      border-radius: 4px;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal.modal-wide { width: 560px; }
+
+    .modal.modal-price {
+      width: 920px;
+      max-width: calc(100vw - 32px);
+      max-height: calc(100vh - 48px);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .price-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--line);
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .price-modal-close {
+      border: none;
+      background: transparent;
+      color: #909399;
+      font-size: 22px;
+      cursor: pointer;
+    }
+
+    .price-toolbar {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 20px;
+      background: #fafafa;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .price-toolbar select,
+    .price-toolbar input {
+      height: 32px;
+      border: 1px solid #dcdfe6;
+      border-radius: 2px;
+      padding: 0 8px;
+      background: #fff;
+    }
+
+    .price-toolbar select { min-width: 140px; }
+    .price-toolbar input { width: 120px; }
+
+    .price-value-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .price-value-suffix {
+      min-width: 12px;
+      color: #606266;
+    }
+
+    .price-list {
+      min-height: 180px;
+      max-height: 420px;
+      overflow: auto;
+      background: #fff;
+    }
+
+    .price-list-title {
+      padding: 10px 20px 6px;
+      color: #606266;
+      font-size: 13px;
+      font-weight: 600;
+      background: #f8f9fb;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .price-item {
+      display: flex;
+      gap: 12px;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .price-item-detail {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .price-item-title {
+      margin-bottom: 7px;
+      color: #303133;
+      font-weight: 500;
+    }
+
+    .price-item-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+      margin-bottom: 10px;
+      color: #606266;
+      font-size: 12px;
+    }
+
+    .price-fields {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      font-size: 12px;
+    }
+
+    .price-field {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .price-field input {
+      width: 110px;
+      height: 30px;
+      border: 1px solid #dcdfe6;
+      border-radius: 2px;
+      padding: 0 8px;
+      outline: none;
+    }
+
+    .price-field input:focus { border-color: var(--blue); }
+
+    .modal-price input:disabled,
+    .modal-price select:disabled {
+      background: #f5f7fa;
+      color: #909399;
+      cursor: not-allowed;
+    }
+
+    .modal-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--line);
+      font-weight: 600;
+    }
+
+    .modal-body { padding: 16px; }
+
+    .modal-row { margin-bottom: 12px; }
+
+    .modal-row:last-child { margin-bottom: 0; }
+
+    .modal-row label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--sub-text);
+    }
+
+    .modal-row input,
+    .modal-row select,
+    .modal-row textarea {
+      width: 100%;
+      border: 1px solid #dcdfe6;
+      border-radius: 2px;
+      padding: 0 10px;
+      outline: none;
+      font-family: inherit;
+      font-size: 14px;
+      background: #fff;
+    }
+
+    .modal-row input,
+    .modal-row select { height: 34px; }
+
+    .modal-row textarea {
+      height: 72px;
+      padding: 8px 10px;
+      resize: vertical;
+    }
+
+    .modal-row input:focus,
+    .modal-row select:focus,
+    .modal-row textarea:focus { border-color: var(--blue); }
+
+    .modal-row input:disabled,
+    .modal-row select:disabled,
+    .modal-row textarea:disabled {
+      background: #f5f7fa;
+      color: #909399;
+      cursor: not-allowed;
+    }
+
+    .modal-footer {
+      padding: 10px 16px;
+      text-align: right;
+      border-top: 1px solid var(--line);
+      background: #fafafa;
+    }
+
+    .audit-bar {
+      padding: 12px 16px;
+      background: #f5f7fa;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .audit-bar label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--sub-text);
+      font-size: 12px;
+    }
+
+    .audit-bar select {
+      width: 100%;
+      height: 34px;
+      border: 1px solid #dcdfe6;
+      border-radius: 2px;
+      padding: 0 10px;
+      outline: none;
+      background: #fff;
+    }
+
+    .audit-bar select:disabled {
+      background: #eef0f3;
+      color: #909399;
+      cursor: not-allowed;
+    }
+
+    .log-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      table-layout: fixed;
+    }
+
+    .log-table th,
+    .log-table td {
+      border: 1px solid var(--line);
+      padding: 8px;
+      text-align: left;
+      word-break: break-all;
+    }
+
+    .log-table th {
+      background: #f8f9fb;
+      color: #606266;
+      font-weight: 600;
+    }
+
+    .multi-select {
+      position: relative;
+      width: 260px;
+    }
+
+    .multi-select-trigger {
+      width: 100%;
+      height: 32px;
+      border: 1px solid #dcdfe6;
+      border-radius: 2px;
+      padding: 0 28px 0 10px;
+      background: #fff;
+      color: var(--text);
+      text-align: left;
+      cursor: pointer;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      position: relative;
+      font-size: 14px;
+      font-family: inherit;
+    }
+
+    .multi-select-trigger.placeholder { color: #a8abb2; }
+
+    .multi-select-trigger::after {
+      content: "▾";
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #c0c4cc;
+      font-size: 12px;
+    }
+
+    .multi-select-trigger:focus { border-color: var(--blue); outline: none; }
+
+    .multi-select-panel {
+      display: none;
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      background: #fff;
+      border: 1px solid #e4e7ed;
+      border-radius: 2px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      z-index: 200;
+      max-height: 220px;
+      overflow: auto;
+      padding: 6px 0;
+    }
+
+    .multi-select.open .multi-select-panel { display: block; }
+
+    .multi-select-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 13px;
+      color: #303133;
+      user-select: none;
+    }
+
+    .multi-select-option:hover { background: #f5f7fa; }
+
+    .multi-select-option input { margin: 0; cursor: pointer; width: auto; height: auto; }
+
+    .price-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .price-input-wrap input {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .currency-tag {
+      flex-shrink: 0;
+      min-width: 52px;
+      height: 34px;
+      line-height: 34px;
+      text-align: center;
+      padding: 0 8px;
+      background: #f5f7fa;
+      border: 1px solid #dcdfe6;
+      border-radius: 2px;
+      color: #606266;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .modal.modal-sku {
+      width: 720px;
+      max-width: calc(100vw - 32px);
+      max-height: calc(100vh - 48px);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal.modal-sku .modal-body {
+      overflow: auto;
+      max-height: calc(100vh - 180px);
+    }
+
+    .req {
+      color: #f56c6c;
+      margin-right: 2px;
+    }
+
+    .sku-editor {
+      margin-top: 4px;
+    }
+
+    .sku-editor-head {
+      display: grid;
+      grid-template-columns: 1fr 160px 88px 72px;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 8px;
+      color: var(--sub-text);
+      font-size: 13px;
+    }
+
+    .sku-editor-head .currency-inline {
+      color: #909399;
+      font-weight: 400;
+      margin-left: 4px;
+    }
+
+    .sku-row {
+      display: grid;
+      grid-template-columns: 1fr 160px 88px 72px;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .sku-row select,
+    .sku-row input {
+      width: 100%;
+      height: 34px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      padding: 0 10px;
+      outline: none;
+      background: #fff;
+      font-size: 14px;
+      font-family: inherit;
+    }
+
+    .sku-row input.sku-erp {
+      background: #f5f7fa;
+      color: #606266;
+      cursor: default;
+    }
+
+    .sku-row select:focus,
+    .sku-row input:focus {
+      border-color: var(--blue);
+    }
+
+    .sku-row select:disabled,
+    .sku-row input:disabled {
+      background: #f5f7fa;
+      color: #909399;
+      cursor: not-allowed;
+    }
+
+    .sku-sync-cell {
+      display: flex;
+      align-items: center;
+    }
+
+    .sku-sync-cell .btn {
+      width: 100%;
+      padding: 0 8px;
+    }
+
+    .sku-ops {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      width: 28px;
+      height: 28px;
+      border: 1px solid #dcdfe6;
+      background: #fff;
+      border-radius: 4px;
+      color: #606266;
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+
+    .icon-btn:hover {
+      border-color: var(--blue);
+      color: var(--blue);
+    }
+
+    .icon-btn.danger:hover {
+      border-color: #f56c6c;
+      color: #f56c6c;
+    }
+
+    .icon-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .sku-empty-tip {
+      color: #909399;
+      font-size: 13px;
+      padding: 8px 0 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">亚马逊限价管理原型</div>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <a class="menu-item active" href="javascript:void(0)">亚马逊限价管理</a>
+    </aside>
+
+    <main class="main">
+      <div class="container">
+        <div class="panel-head">
+          <button type="button" class="panel-tab active" data-tab="sectionManage">限价管理</button>
+          <button type="button" class="panel-tab" data-tab="sectionListing">限价数据</button>
+        </div>
+
+        <section class="module-section active" id="sectionManage">
+          <div class="card filter-panel">
+            <div class="filter-grid">
+              <div class="form-item">
+                <input type="text" id="filterProductId" placeholder="产品ID（多个以空格或逗号分隔）" />
+              </div>
+              <div class="form-item">
+                <select id="filterSite">
+                  <option value="" selected>站点</option>
+                </select>
+              </div>
+              <div class="form-item">
+                <select id="filterStatus">
+                  <option value="" selected>审核状态</option>
+                </select>
+              </div>
+              <div class="form-item">
+                <select id="filterCreator">
+                  <option value="" selected>添加人</option>
+                </select>
+              </div>
+              <div class="form-item">
+                <select id="filterAuditor">
+                  <option value="" selected>审核人</option>
+                </select>
+              </div>
+              <div class="search-actions">
+                <button type="button" class="btn btn-primary" id="searchBtn">查询</button>
+                <button type="button" class="btn" id="resetBtn">重置</button>
+              </div>
+            </div>
+            <div class="extra-actions">
+              <button type="button" class="btn btn-primary" id="addBtn">录入限价数据</button>
+              <button type="button" class="btn btn-danger" id="deleteBtn">删除</button>
+            </div>
+          </div>
+
+          <div class="card table-panel">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th class="checkbox-cell"><input type="checkbox" id="checkAll" /></th>
+                    <th class="expand-cell"></th>
+                    <th style="width: 72px;">图片</th>
+                    <th style="width: 160px;">产品信息</th>
+                    <th style="width: 100px;">产品ID</th>
+                    <th style="width: 80px;">站点</th>
+                    <th style="width: 140px;">刊登最低金额范围</th>
+                    <th style="width: 90px;">审核状态</th>
+                    <th style="width: 90px;">添加人</th>
+                    <th style="width: 90px;">审核人</th>
+                    <th style="width: 158px;">添加时间</th>
+                    <th style="width: 120px;">备注</th>
+                    <th style="width: 160px;">操作</th>
+                  </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+              </table>
+            </div>
+            <div class="footer-tip">
+              <span id="totalTip">共 0 条数据</span>
+              <span class="pager" id="pagerTip">上一页&nbsp;&nbsp;1/1&nbsp;&nbsp;下一页</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="module-section" id="sectionListing">
+          <div class="card filter-panel">
+            <div class="filter-grid">
+              <div class="form-item">
+                <input type="text" id="listingFilterProductId" placeholder="产品ID" />
+              </div>
+              <div class="form-item">
+                <input type="text" id="listingFilterProductInfo" placeholder="产品信息" />
+              </div>
+              <div class="form-item">
+                <input type="text" id="listingFilterSellerSku" placeholder="卖家SKU" />
+              </div>
+              <div class="form-item">
+                <input type="text" id="listingFilterErpSku" placeholder="ERPSKU" />
+              </div>
+              <div class="form-item">
+                <input type="text" id="listingFilterAsin" placeholder="ASIN" />
+              </div>
+              <div class="form-item">
+                <select id="listingFilterSite">
+                  <option value="" selected>站点</option>
+                </select>
+              </div>
+              <div class="form-item">
+                <select id="listingFilterStore">
+                  <option value="" selected>店铺</option>
+                </select>
+              </div>
+              <div class="form-item">
+                <select id="listingFilterOwner">
+                  <option value="" selected>链接负责人</option>
+                </select>
+              </div>
+              <div class="form-item">
+                <input type="number" id="listingFilterHitCount" min="0" step="1" placeholder="出现次数" />
+              </div>
+              <div class="form-item">
+                <select id="listingFilterProcessStatus">
+                  <option value="" selected>处理状态</option>
+                </select>
+              </div>
+              <div class="search-actions">
+                <button type="button" class="btn btn-primary" id="listingSearchBtn">查询</button>
+                <button type="button" class="btn" id="listingResetBtn">重置</button>
+              </div>
+            </div>
+            <div class="extra-actions">
+              <button type="button" class="btn btn-primary" id="listingBatchPriceBtn">批量修改售价</button>
+              <button type="button" class="btn btn-primary" id="listingBatchDeleteLinkBtn">批量删除链接</button>
+            </div>
+          </div>
+
+          <div class="card table-panel">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th class="checkbox-cell"><input type="checkbox" id="listingCheckAll" /></th>
+                    <th style="width: 72px;">图片</th>
+                    <th style="width: 260px;">产品信息</th>
+                    <th style="width: 110px;">产品ID</th>
+                    <th style="width: 140px;">卖家SKU</th>
+                    <th style="width: 150px;">ERPSKU</th>
+                    <th style="width: 160px;">ASIN</th>
+                    <th style="width: 80px;">站点</th>
+                    <th style="width: 140px;">店铺</th>
+                    <th style="width: 110px;">链接负责人</th>
+                    <th style="width: 110px;">售价</th>
+                    <th style="width: 130px;">刊登最低金额</th>
+                    <th style="width: 120px;">处理状态</th>
+                    <th style="width: 90px;">出现次数</th>
+                    <th style="width: 158px;">查询时间</th>
+                    <th style="width: 190px;">操作</th>
+                  </tr>
+                </thead>
+                <tbody id="listingTableBody"></tbody>
+              </table>
+            </div>
+            <div class="footer-tip">
+              <span id="listingTotalTip">共 0 条数据</span>
+              <span class="pager" id="listingPagerTip">上一页&nbsp;&nbsp;1/1&nbsp;&nbsp;下一页</span>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- 录入弹窗 -->
+  <div class="mask" id="addModalMask">
+    <div class="modal modal-sku">
+      <div class="modal-header">录入限价数据</div>
+      <div class="modal-body">
+        <div class="modal-row">
+          <label for="addPlatform">平台</label>
+          <select id="addPlatform"></select>
+        </div>
+        <div class="modal-row">
+          <label for="addSite">站点</label>
+          <select id="addSite"></select>
+        </div>
+        <div class="modal-row">
+          <label for="addProductId"><span class="req">*</span>产品ID</label>
+          <input type="text" id="addProductId" placeholder="输入产品ID后自动带出 ERPSKU" />
+        </div>
+        <div class="modal-row">
+          <div class="sku-editor" id="addSkuEditor">
+            <div class="sku-editor-head">
+              <div><span class="req">*</span>ERPSKU</div>
+              <div><span class="req">*</span>刊登最低金额<span class="currency-inline" id="addCurrencyTag">JPY</span></div>
+              <div></div>
+              <div></div>
+            </div>
+            <div id="addSkuRows"></div>
+            <div class="sku-empty-tip" id="addSkuEmptyTip">请先输入产品ID以带出 ERPSKU</div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn" id="addCancelBtn">取消</button>
+        <button type="button" class="btn btn-primary" id="addConfirmBtn">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 审核/查看弹窗 -->
+  <div class="mask" id="auditModalMask">
+    <div class="modal modal-sku">
+      <div class="modal-header" id="auditModalTitle">审核限价数据</div>
+      <div class="audit-bar">
+        <label for="auditStatus">审核</label>
+        <select id="auditStatus">
+          <option value="待审核">待审核</option>
+          <option value="审核通过">审核通过</option>
+          <option value="拒绝">拒绝</option>
+        </select>
+      </div>
+      <div class="modal-body">
+        <div class="modal-row">
+          <label for="auditSite">站点</label>
+          <select id="auditSite"></select>
+        </div>
+        <div class="modal-row">
+          <label for="auditProductId"><span class="req">*</span>产品ID</label>
+          <input type="text" id="auditProductId" />
+        </div>
+        <div class="modal-row">
+          <div class="sku-editor" id="auditSkuEditor">
+            <div class="sku-editor-head">
+              <div><span class="req">*</span>ERPSKU</div>
+              <div><span class="req">*</span>刊登最低金额<span class="currency-inline" id="auditCurrencyTag">JPY</span></div>
+              <div></div>
+              <div></div>
+            </div>
+            <div id="auditSkuRows"></div>
+          </div>
+        </div>
+        <div class="modal-row">
+          <label for="auditRemark">备注</label>
+          <textarea id="auditRemark" placeholder="拒绝时建议填写原因"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn" id="auditCancelBtn">取消</button>
+        <button type="button" class="btn btn-primary" id="auditConfirmBtn">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 日志弹窗 -->
+  <div class="mask mask-log" id="logModalMask">
+    <div class="modal modal-wide">
+      <div class="modal-header">操作日志</div>
+      <div class="modal-body" style="max-height: 360px; overflow: auto;">
+        <table class="log-table">
+          <thead>
+            <tr>
+              <th style="width: 88px;">操作人</th>
+              <th>操作内容</th>
+              <th style="width: 160px;">操作时间</th>
+            </tr>
+          </thead>
+          <tbody id="logTableBody"></tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="logCloseBtn">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 修改售价 / 批量修改售价 -->
+  <div class="mask" id="listingPriceModalMask">
+    <div class="modal modal-price">
+      <div class="price-modal-header">
+        <span id="listingPriceModalTitle">修改售价</span>
+        <button type="button" class="price-modal-close" id="listingPriceCloseX" aria-label="关闭">×</button>
+      </div>
+      <div class="price-toolbar">
+        <select id="listingPriceMode">
+          <option value="unifiedProfit">统一利润率</option>
+          <option value="unifiedSalePrice">统一售价</option>
+          <option value="pricePlus">售价加</option>
+          <option value="priceMinus">售价减</option>
+          <option value="priceMultiply">售价乘</option>
+        </select>
+        <div class="price-value-group">
+          <input type="number" id="listingPriceValue" min="0" step="0.01" placeholder="最多2位小数" />
+          <span class="price-value-suffix" id="listingPriceSuffix">%</span>
+        </div>
+        <button type="button" class="btn btn-primary" id="listingPriceApplyBtn">应用全部</button>
+      </div>
+      <div class="price-list">
+        <div class="price-list-title">商品</div>
+        <div id="listingPriceList"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn" id="listingPriceCancelBtn">取消</button>
+        <button type="button" class="btn btn-primary" id="listingPriceConfirmBtn">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 限价数据操作日志 -->
+  <div class="mask mask-log" id="listingLogModalMask">
+    <div class="modal modal-wide">
+      <div class="modal-header">操作日志</div>
+      <div class="modal-body" style="max-height: 360px; overflow: auto;">
+        <table class="log-table">
+          <thead>
+            <tr>
+              <th style="width: 88px;">修改人</th>
+              <th>修改内容</th>
+              <th style="width: 160px;">修改时间</th>
+            </tr>
+          </thead>
+          <tbody id="listingLogTableBody"></tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="listingLogCloseBtn">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const PLATFORMS = [
+      "shopee", "lazada", "shopify", "headline", "amazon", "shopline",
+      "aliexpress", "coupang", "11st", "tikshop", "hbs", "gmk", "mercado",
+      "allegro", "ozon", "qoo10", "naver", "interpark", "wemakeprice",
+      "rakuten", "ebay", "yahoo", "douyin", "kuaishou", "daraz", "tokopedia",
+      "temu", "noon", "cdiscount", "wildberries", "Walmart", "shopbase",
+      "etsy", "emag", "shein", "red", "Thaimart", "alibaba", "common"
+    ];
+    const SITES = ["日本", "美国", "英国", "德国", "法国", "加拿大", "澳大利亚"];
+    const STATUSES = ["待审核", "审核通过", "拒绝"];
+    const PEOPLE = ["李婷", "张管理", "王明", "陈航", "孙凯"];
+    const STORES = ["日本旗舰店", "美国自营店", "英国站A店", "德国站B店", "法国精品店"];
+    const PROCESS_STATUSES = [
+      "待处理",
+      "处理中",
+      "修改售价成功",
+      "修改售价失败",
+      "删除链接成功",
+      "删除链接失败"
+    ];
+
+    const PRODUCT_MAP = {
+      "10123001": { name: "无线蓝牙耳机 Pro", image: "https://picsum.photos/seed/p10123001/96/96" },
+      "10123002": { name: "USB-C 快充数据线 2m", image: "https://picsum.photos/seed/p10123002/96/96" },
+      "10123003": { name: "硅胶手机保护壳", image: "https://picsum.photos/seed/p10123003/96/96" },
+      "10123004": { name: "便携迷你风扇", image: "https://picsum.photos/seed/p10123004/96/96" },
+      "10123005": { name: "LED 台灯护眼版", image: "https://picsum.photos/seed/p10123005/96/96" }
+    };
+
+    const LISTING_TITLE_MAP = {
+      "10123001": "Wireless Bluetooth Earbuds Pro",
+      "10123002": "USB-C Fast Charging Cable 2m",
+      "10123003": "Soft Silicone Phone Case",
+      "10123004": "Portable Mini Cooling Fan",
+      "10123005": "LED Eye-Care Desk Lamp"
+    };
+
+    function buildMockErpSkus(productId, count) {
+      const left = String(productId || "1057609").replace(/\D/g, "") || "1057609";
+      const baseRight = 3985512;
+      const n = count == null ? 10 : count;
+      return Array.from({ length: n }, (_, i) => `${left}-${baseRight + i}`);
+    }
+
+    function nextMockErpSku(productId, existingSkus) {
+      const left = String(productId || "1057609").replace(/\D/g, "") || "1057609";
+      let maxRight = 3985511;
+      existingSkus.forEach((sku) => {
+        const parts = String(sku).split("-");
+        const right = parseInt(parts[1], 10);
+        if (!Number.isNaN(right) && right > maxRight) maxRight = right;
+      });
+      return `${left}-${maxRight + 1}`;
+    }
+
+    let listingRecords = [
+      {
+        id: 1,
+        productId: "10123001",
+        sellerSku: "JP-EAR-001",
+        site: "日本",
+        store: "日本旗舰店",
+        owner: "李婷",
+        price: 1180,
+        hitCount: 3,
+        queryTime: "2026-09-15 10:22:11",
+        processStatus: "待处理"
+      },
+      {
+        id: 2,
+        productId: "10123002",
+        sellerSku: "US-CABLE-002",
+        site: "美国",
+        store: "美国自营店",
+        owner: "王明",
+        price: 8.99,
+        hitCount: 5,
+        queryTime: "2026-09-15 09:48:36",
+        processStatus: "修改售价成功"
+      },
+      {
+        id: 3,
+        productId: "10123003",
+        sellerSku: "UK-CASE-003",
+        site: "英国",
+        store: "英国站A店",
+        owner: "陈航",
+        price: 5.50,
+        hitCount: 1,
+        queryTime: "2026-09-14 17:05:02",
+        processStatus: "修改售价失败"
+      },
+      {
+        id: 4,
+        productId: "10123004",
+        sellerSku: "JP-FAN-004",
+        site: "日本",
+        store: "日本旗舰店",
+        owner: "孙凯",
+        price: 850,
+        hitCount: 2,
+        queryTime: "2026-09-14 15:31:44",
+        processStatus: "删除链接成功",
+        linkDeleted: true
+      },
+      {
+        id: 5,
+        productId: "10123005",
+        sellerSku: "DE-LAMP-005",
+        site: "德国",
+        store: "德国站B店",
+        owner: "张管理",
+        price: 19.90,
+        hitCount: 4,
+        queryTime: "2026-09-13 11:12:08",
+        processStatus: "删除链接失败"
+      }
+    ];
+
+    let filteredListingRecords = [...listingRecords];
+    let activePriceRecordIds = [];
+    let listingPriceViewOnly = false;
+
+    let records = [
+      {
+        id: 1,
+        productId: "10123001",
+        site: "日本",
+        status: "待审核",
+        creator: "李婷",
+        auditor: "",
+        createdAt: "2026-09-15 09:12:03",
+        remark: "",
+        items: [
+          { erpSku: "10123001-3985512", minPrice: 1280 },
+          { erpSku: "10123001-3985513", minPrice: 1280 },
+          { erpSku: "10123001-3985514", minPrice: 1300 }
+        ],
+        logs: [
+          { operator: "李婷", content: "录入限价：站点=日本，产品ID=10123001，共3个ERPSKU", time: "2026-09-15 09:12:03" }
+        ]
+      },
+      {
+        id: 2,
+        productId: "10123002",
+        site: "美国",
+        status: "待审核",
+        creator: "张管理",
+        auditor: "",
+        createdAt: "2026-09-14 16:45:18",
+        remark: "",
+        items: [
+          { erpSku: "10123002-3985512", minPrice: 9.99 },
+          { erpSku: "10123002-3985513", minPrice: 10.99 }
+        ],
+        logs: [
+          { operator: "张管理", content: "录入限价：站点=美国，产品ID=10123002，共2个ERPSKU", time: "2026-09-14 16:45:18" }
+        ]
+      },
+      {
+        id: 3,
+        productId: "10123003",
+        site: "英国",
+        status: "拒绝",
+        creator: "王明",
+        auditor: "张管理",
+        createdAt: "2026-09-13 11:20:55",
+        remark: "金额低于成本价",
+        items: [{ erpSku: "10123003-3985512", minPrice: 6.50 }],
+        logs: [
+          { operator: "王明", content: "录入限价：站点=英国，产品ID=10123003，共1个ERPSKU", time: "2026-09-13 11:20:55" },
+          { operator: "张管理", content: "审核拒绝：金额低于成本价", time: "2026-09-13 14:02:10" }
+        ]
+      },
+      {
+        id: 4,
+        productId: "10123004",
+        site: "日本",
+        status: "审核通过",
+        creator: "陈航",
+        auditor: "张管理",
+        createdAt: "2026-09-12 08:03:29",
+        remark: "",
+        items: [
+          { erpSku: "10123004-3985512", minPrice: 890 },
+          { erpSku: "10123004-3985513", minPrice: 890 },
+          { erpSku: "10123004-3985514", minPrice: 920 },
+          { erpSku: "10123004-3985515", minPrice: 950 }
+        ],
+        logs: [
+          { operator: "陈航", content: "录入限价：站点=日本，产品ID=10123004，共4个ERPSKU", time: "2026-09-12 08:03:29" },
+          { operator: "张管理", content: "审核通过", time: "2026-09-12 10:15:00" }
+        ]
+      },
+      {
+        id: 5,
+        productId: "10123005",
+        site: "德国",
+        status: "审核通过",
+        creator: "孙凯",
+        auditor: "张管理",
+        createdAt: "2026-09-11 14:25:10",
+        remark: "",
+        items: [{ erpSku: "10123005-3985512", minPrice: 24.90 }],
+        logs: [
+          { operator: "孙凯", content: "录入限价：站点=德国，产品ID=10123005，共1个ERPSKU", time: "2026-09-11 14:25:10" },
+          { operator: "张管理", content: "审核通过", time: "2026-09-11 15:03:22" }
+        ]
+      }
+    ];
+
+    let filteredRecords = [...records];
+    let auditTargetId = null;
+    let auditViewOnly = false;
+    let nextId = 6;
+    const expandedIds = new Set();
+
+    function formatPriceRange(site, items) {
+      if (!items || !items.length) return "--";
+      const prices = items.map((i) => Number(i.minPrice)).filter((n) => !Number.isNaN(n));
+      if (!prices.length) return "--";
+      const min = Math.min(...prices);
+      const max = Math.max(...prices);
+      const currency = getCurrency(site);
+      const fmt = (n) => (site === "日本" ? n.toLocaleString("zh-CN") : n.toFixed(2));
+      const range = min === max ? fmt(min) : `${fmt(min)} ~ ${fmt(max)}`;
+      return currency ? `${range} ${currency}` : range;
+    }
+
+    function parseMultiInput(value) {
+      return value
+        .split(/[\s,，]+/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+    }
+
+    function getCurrency(site) {
+      const map = {
+        日本: "JPY",
+        美国: "USD",
+        英国: "GBP",
+        德国: "EUR",
+        法国: "EUR",
+        加拿大: "CAD",
+        澳大利亚: "AUD"
+      };
+      return map[site] || "";
+    }
+
+    function formatPrice(site, price) {
+      const currency = getCurrency(site);
+      const num = Number(price);
+      const amount = site === "日本" ? num.toLocaleString("zh-CN") : num.toFixed(2);
+      return currency ? `${amount} ${currency}` : String(amount);
+    }
+
+    function getProductInfo(productId) {
+      return PRODUCT_MAP[productId] || {
+        name: "未知产品",
+        image: "https://picsum.photos/seed/default/96/96"
+      };
+    }
+
+    function syncCurrencyTag(siteSelectId, tagId) {
+      const site = document.getElementById(siteSelectId).value;
+      document.getElementById(tagId).textContent = getCurrency(site) || "--";
+    }
+
+    function collectSkuRows(containerId) {
+      return [...document.querySelectorAll(`#${containerId} .sku-row`)].map((row) => ({
+        erpSku: row.querySelector(".sku-erp").value.trim(),
+        minPrice: parseFloat(row.querySelector(".sku-price").value)
+      }));
+    }
+
+    function renderSkuRows(containerId, rows, options) {
+      const {
+        readonly = false,
+        showSync = true,
+        showOps = true,
+        emptyTipId = null
+      } = options || {};
+      const container = document.getElementById(containerId);
+
+      container.innerHTML = rows
+        .map((row, index) => {
+          const syncCell =
+            showSync && index === 0
+              ? `<div class="sku-sync-cell"><button type="button" class="btn btn-primary sku-sync-btn" ${readonly ? "disabled" : ""}>同步</button></div>`
+              : `<div class="sku-sync-cell"></div>`;
+
+          const opsCell = showOps
+            ? `<div class="sku-ops">
+                <button type="button" class="icon-btn sku-add-btn" title="新增" ${readonly ? "disabled" : ""}>+</button>
+                <button type="button" class="icon-btn danger sku-del-btn" title="删除" ${readonly ? "disabled" : ""}>×</button>
+              </div>`
+            : `<div class="sku-ops"></div>`;
+
+          return `
+            <div class="sku-row" data-index="${index}">
+              <input type="text" class="sku-erp" value="${row.erpSku || ""}" readonly />
+              <input type="number" class="sku-price" step="0.01" min="0" value="${row.minPrice ?? ""}" placeholder="刊登最低金额" ${readonly ? "disabled" : ""} />
+              ${syncCell}
+              ${opsCell}
+            </div>
+          `;
+        })
+        .join("");
+
+      if (emptyTipId) {
+        document.getElementById(emptyTipId).style.display = rows.length ? "none" : "block";
+      }
+    }
+
+    function loadAddSkuByProductId() {
+      const productId = document.getElementById("addProductId").value.trim();
+      if (!productId) {
+        renderSkuRows("addSkuRows", [{ erpSku: "", minPrice: "" }], { emptyTipId: "addSkuEmptyTip" });
+        document.getElementById("addSkuEmptyTip").style.display = "none";
+        return;
+      }
+      const erpList = buildMockErpSkus(productId, 10);
+      renderSkuRows(
+        "addSkuRows",
+        erpList.map((sku) => ({ erpSku: sku, minPrice: "" })),
+        { emptyTipId: "addSkuEmptyTip" }
+      );
+    }
+
+    function openAddModalDefaultRows() {
+      renderSkuRows("addSkuRows", [{ erpSku: "", minPrice: "" }], { emptyTipId: "addSkuEmptyTip" });
+      document.getElementById("addSkuEmptyTip").style.display = "none";
+    }
+
+    function syncSkuPrices(containerId) {
+      const prices = [...document.querySelectorAll(`#${containerId} .sku-price`)];
+      if (!prices.length) return;
+      const first = prices[0].value;
+      if (first === "") {
+        alert("请先填写第一行刊登最低金额");
+        return;
+      }
+      prices.forEach((input) => {
+        input.value = first;
+      });
+    }
+
+    function fillSelect(selectId, options, placeholder) {
+      const sel = document.getElementById(selectId);
+      sel.innerHTML =
+        `<option value="">${placeholder}</option>` +
+        options.map((o) => `<option value="${o}">${o}</option>`).join("");
+    }
+
+    function syncPlaceholderColor(sel) {
+      if (!sel.value) sel.classList.add("placeholder");
+      else sel.classList.remove("placeholder");
+    }
+
+    function initPersonSelects() {
+      fillSelect("filterCreator", PEOPLE, "添加人");
+      fillSelect("filterAuditor", PEOPLE, "审核人");
+      fillSelect("filterSite", SITES, "站点");
+      fillSelect("filterStatus", STATUSES, "审核状态");
+      fillSelect("listingFilterOwner", PEOPLE, "链接负责人");
+      [
+        "filterCreator",
+        "filterAuditor",
+        "filterSite",
+        "filterStatus",
+        "listingFilterOwner",
+        "listingFilterSite",
+        "listingFilterStore",
+        "listingFilterProcessStatus"
+      ].forEach((id) => {
+        const sel = document.getElementById(id);
+        if (!sel) return;
+        syncPlaceholderColor(sel);
+        sel.addEventListener("change", () => syncPlaceholderColor(sel));
+      });
+    }
+
+    function initListingSelects() {
+      fillSelect("listingFilterSite", SITES, "站点");
+      fillSelect("listingFilterStore", STORES, "店铺");
+      fillSelect("listingFilterProcessStatus", PROCESS_STATUSES, "处理状态");
+      syncPlaceholderColor(document.getElementById("listingFilterSite"));
+      syncPlaceholderColor(document.getElementById("listingFilterStore"));
+      syncPlaceholderColor(document.getElementById("listingFilterProcessStatus"));
+    }
+
+    function initTabs() {
+      document.querySelectorAll(".panel-tab").forEach((tab) => {
+        tab.addEventListener("click", () => {
+          const target = tab.dataset.tab;
+          document.querySelectorAll(".panel-tab").forEach((t) => t.classList.remove("active"));
+          document.querySelectorAll(".module-section").forEach((s) => s.classList.remove("active"));
+          tab.classList.add("active");
+          document.getElementById(target).classList.add("active");
+        });
+      });
+    }
+
+    function getListingDisplayData(row) {
+      const product = getProductInfo(row.productId);
+      const suffix = String(row.id).padStart(3, "0");
+      return {
+        product,
+        listingTitle: LISTING_TITLE_MAP[row.productId] || `${product.name} Listing`,
+        parentAsin: `B0PARENT${suffix}`,
+        childAsin: `B0CHILD${suffix}`,
+        erpSku: `${row.productId}-3985512`
+      };
+    }
+
+    function getListingMinPriceValue(row, erpSku) {
+      const matchedRecord = records.find(
+        (record) =>
+          record.productId === row.productId &&
+          (record.items || []).some((item) => item.erpSku === erpSku)
+      );
+      if (!matchedRecord) return null;
+      const matchedItem = matchedRecord.items.find((item) => item.erpSku === erpSku);
+      return Number(matchedItem.minPrice);
+    }
+
+    function getListingMinPrice(row, erpSku) {
+      const minPrice = getListingMinPriceValue(row, erpSku);
+      return minPrice === null ? "--" : formatPrice(row.site, minPrice);
+    }
+
+    function parseFuzzyTerms(value) {
+      return value
+        .split(",")
+        .map((term) => term.trim().toLowerCase())
+        .filter(Boolean);
+    }
+
+    function matchesAnyTerm(values, terms) {
+      if (!terms.length) return true;
+      const haystacks = values.map((value) => String(value || "").toLowerCase());
+      return terms.some((term) => haystacks.some((value) => value.includes(term)));
+    }
+
+    function applyListingFilter() {
+      const productId = document.getElementById("listingFilterProductId").value.trim();
+      const productInfoTerms = parseFuzzyTerms(
+        document.getElementById("listingFilterProductInfo").value
+      );
+      const sellerSku = document.getElementById("listingFilterSellerSku").value.trim();
+      const erpSkuTerms = parseFuzzyTerms(document.getElementById("listingFilterErpSku").value);
+      const asinTerms = parseFuzzyTerms(document.getElementById("listingFilterAsin").value);
+      const site = document.getElementById("listingFilterSite").value;
+      const store = document.getElementById("listingFilterStore").value;
+      const owner = document.getElementById("listingFilterOwner").value;
+      const processStatus = document.getElementById("listingFilterProcessStatus").value;
+      const hitRaw = document.getElementById("listingFilterHitCount").value;
+      const hitCount = hitRaw === "" ? null : Number(hitRaw);
+
+      filteredListingRecords = listingRecords.filter((row) => {
+        const display = getListingDisplayData(row);
+        const minPrice = getListingMinPriceValue(row, display.erpSku);
+        if (minPrice === null || Number(row.price) >= minPrice) return false;
+        if (productId && row.productId !== productId) return false;
+        if (
+          !matchesAnyTerm(
+            [display.listingTitle, display.product.name],
+            productInfoTerms
+          )
+        ) return false;
+        if (sellerSku && row.sellerSku !== sellerSku) return false;
+        if (!matchesAnyTerm([display.erpSku], erpSkuTerms)) return false;
+        if (!matchesAnyTerm([display.parentAsin, display.childAsin], asinTerms)) return false;
+        if (site && row.site !== site) return false;
+        if (store && row.store !== store) return false;
+        if (owner && row.owner !== owner) return false;
+        if (processStatus && (row.processStatus || "待处理") !== processStatus) return false;
+        if (hitCount !== null && !Number.isNaN(hitCount) && row.hitCount !== hitCount) return false;
+        return true;
+      });
+
+      renderListingTable();
+    }
+
+    function resetListingFilter() {
+      document.getElementById("listingFilterProductId").value = "";
+      document.getElementById("listingFilterProductInfo").value = "";
+      document.getElementById("listingFilterSellerSku").value = "";
+      document.getElementById("listingFilterErpSku").value = "";
+      document.getElementById("listingFilterAsin").value = "";
+      document.getElementById("listingFilterHitCount").value = "";
+      document.getElementById("listingFilterSite").value = "";
+      document.getElementById("listingFilterStore").value = "";
+      document.getElementById("listingFilterOwner").value = "";
+      document.getElementById("listingFilterProcessStatus").value = "";
+      [
+        "listingFilterSite",
+        "listingFilterStore",
+        "listingFilterOwner",
+        "listingFilterProcessStatus"
+      ].forEach((id) => {
+        syncPlaceholderColor(document.getElementById(id));
+      });
+      applyListingFilter();
+    }
+
+    function renderListingTable() {
+      const tbody = document.getElementById("listingTableBody");
+      document.getElementById("listingCheckAll").checked = false;
+      tbody.innerHTML = filteredListingRecords
+        .map(
+          (row) => {
+            const { product, listingTitle, parentAsin, childAsin, erpSku } =
+              getListingDisplayData(row);
+            const processStatus = row.processStatus || "待处理";
+            const isFinished = [
+              "修改售价成功",
+              "修改售价失败",
+              "删除链接成功",
+              "删除链接失败"
+            ].includes(processStatus);
+            const operationButtons = isFinished
+              ? `<button type="button" class="link-btn listing-view-btn">查看</button>
+                 <button type="button" class="link-btn listing-log-btn">日志</button>`
+              : `<button type="button" class="link-btn listing-edit-price-btn">修改售价</button>
+                 <button type="button" class="link-btn listing-delete-link-btn">删除链接</button>
+                 <button type="button" class="link-btn listing-log-btn">日志</button>`;
+            return `
+            <tr data-id="${row.id}">
+              <td class="checkbox-cell"><input type="checkbox" class="listing-row-check" /></td>
+              <td><img class="product-thumb" src="${product.image}" alt="${product.name}" /></td>
+              <td>
+                <div class="product-info-lines">
+                  <span title="${listingTitle}">Listing标题：${listingTitle}</span>
+                  <span class="sub-line" title="${product.name}">产品列表标题：${product.name}</span>
+                </div>
+              </td>
+              <td>${row.productId}</td>
+              <td>${row.sellerSku}</td>
+              <td>${erpSku}</td>
+              <td>
+                <div class="asin-lines">
+                  <span>父ASIN：${parentAsin}</span>
+                  <span class="sub-line">子ASIN：${childAsin}</span>
+                </div>
+              </td>
+              <td>${row.site}</td>
+              <td>${row.store}</td>
+              <td>${row.owner}</td>
+              <td>${formatPrice(row.site, row.price)}</td>
+              <td>${getListingMinPrice(row, erpSku)}</td>
+              <td><span class="status">${processStatus}</span></td>
+              <td>${row.hitCount}</td>
+              <td>${row.queryTime}</td>
+              <td>
+                ${operationButtons}
+              </td>
+            </tr>
+          `;
+          }
+        )
+        .join("");
+      document.getElementById("listingTotalTip").textContent = `共 ${filteredListingRecords.length} 条数据`;
+    }
+
+    function renderPriceModalList() {
+      const rows = activePriceRecordIds
+        .map((id) => listingRecords.find((row) => row.id === id))
+        .filter(Boolean);
+
+      document.getElementById("listingPriceList").innerHTML = rows
+        .map((row) => {
+          const display = getListingDisplayData(row);
+          return `
+            <div class="price-item" data-id="${row.id}">
+              <img class="batch-item-thumb product-thumb" src="${display.product.image}" alt="${display.product.name}" />
+              <div class="price-item-detail">
+                <div class="price-item-title">${display.listingTitle}</div>
+                <div class="price-item-meta">
+                  <span>产品ID：${row.productId}</span>
+                  <span>卖家SKU：${row.sellerSku}</span>
+                  <span>ERPSKU：${display.erpSku}</span>
+                  <span>店铺：${row.store}</span>
+                </div>
+                <div class="price-fields">
+                  <span>当前售价：${formatPrice(row.site, row.price)}</span>
+                  <label class="price-field">
+                    新售价
+                    <input type="number" class="listing-new-price" min="0" step="0.01" value="${Number(row.price).toFixed(2)}" ${listingPriceViewOnly ? "disabled" : ""} />
+                    <span>${getCurrency(row.site)}</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          `;
+        })
+        .join("");
+    }
+
+    function openListingPriceModal(ids, viewOnly = false) {
+      activePriceRecordIds = ids;
+      listingPriceViewOnly = viewOnly;
+      document.getElementById("listingPriceModalTitle").textContent =
+        viewOnly ? "查看售价信息" : ids.length > 1 ? "批量修改售价" : "修改售价";
+      document.getElementById("listingPriceMode").value = "unifiedProfit";
+      document.getElementById("listingPriceValue").value = "";
+      document.getElementById("listingPriceMode").disabled = viewOnly;
+      document.getElementById("listingPriceValue").disabled = viewOnly;
+      document.getElementById("listingPriceApplyBtn").disabled = viewOnly;
+      document.getElementById("listingPriceConfirmBtn").style.display = viewOnly ? "none" : "inline-block";
+      document.getElementById("listingPriceCancelBtn").textContent = viewOnly ? "关闭" : "取消";
+      syncListingPriceModeUi();
+      renderPriceModalList();
+      showMask("listingPriceModalMask");
+    }
+
+    function closeListingPriceModal() {
+      hideMask("listingPriceModalMask");
+      activePriceRecordIds = [];
+      listingPriceViewOnly = false;
+    }
+
+    function applyPriceMode(current, value, mode) {
+      if (mode === "unifiedProfit") return current * (1 + value / 100);
+      if (mode === "unifiedSalePrice") return value;
+      if (mode === "pricePlus") return current + value;
+      if (mode === "priceMinus") return Math.max(0, current - value);
+      if (mode === "priceMultiply") return current * value;
+      return current;
+    }
+
+    function validatePendingLinks(ids, isBatch) {
+      const hasNonPending = ids.some((id) => {
+        const row = listingRecords.find((record) => record.id === id);
+        return row && (row.processStatus || "待处理") !== "待处理";
+      });
+      if (!hasNonPending) return true;
+      alert(isBatch ? "存在不是待处理状态链接" : "当前链接不是待处理状态，无法操作");
+      return false;
+    }
+
+    function deleteExternalListingLinks(ids) {
+      const rows = ids
+        .map((id) => listingRecords.find((row) => row.id === id))
+        .filter(Boolean);
+
+      if (
+        !confirm(
+          `确认删除选中 ${rows.length} 条数据在其它位置的 Listing 链接？\n此操作不会删除限价数据信息。`
+        )
+      ) return;
+
+      rows.forEach((row) => {
+        row.linkDeleted = true;
+        row.processStatus = "删除链接成功";
+        if (!row.logs) row.logs = [];
+        row.logs.push({
+          modifier: "张管理",
+          content: `删除其它位置的 Listing 链接，卖家SKU=${row.sellerSku}`,
+          time: nowStr()
+        });
+      });
+      applyListingFilter();
+      alert("外部 Listing 链接已删除，限价数据信息仍保留");
+    }
+
+    function openListingLogModal(id) {
+      const row = listingRecords.find((record) => record.id === id);
+      if (!row) return;
+      const logs = row.logs && row.logs.length
+        ? row.logs
+        : [{
+            modifier: "系统",
+            content: `查询到 Listing 数据，处理状态=${row.processStatus || "待处理"}`,
+            time: row.queryTime
+          }];
+      document.getElementById("listingLogTableBody").innerHTML = logs
+        .map(
+          (log) => `
+            <tr>
+              <td>${log.modifier}</td>
+              <td>${log.content}</td>
+              <td>${log.time}</td>
+            </tr>
+          `
+        )
+        .join("");
+      showMask("listingLogModalMask");
+    }
+
+    function syncListingPriceModeUi() {
+      const mode = document.getElementById("listingPriceMode").value;
+      document.getElementById("listingPriceSuffix").textContent =
+        mode === "unifiedProfit" ? "%" : "";
+    }
+
+    function initSiteSelects() {
+      const platformSelect = document.getElementById("addPlatform");
+      platformSelect.innerHTML = PLATFORMS
+        .map((platform) => `<option value="${platform}">${platform}</option>`)
+        .join("");
+      platformSelect.value = "amazon";
+
+      ["addSite", "auditSite"].forEach((id) => {
+        const sel = document.getElementById(id);
+        sel.innerHTML = SITES.map((s) => `<option value="${s}">${s}</option>`).join("");
+      });
+      document.getElementById("addSite").value = "日本";
+      syncCurrencyTag("addSite", "addCurrencyTag");
+      syncCurrencyTag("auditSite", "auditCurrencyTag");
+
+      document.getElementById("addSite").addEventListener("change", () => {
+        syncCurrencyTag("addSite", "addCurrencyTag");
+      });
+      document.getElementById("auditSite").addEventListener("change", () => {
+        syncCurrencyTag("auditSite", "auditCurrencyTag");
+      });
+    }
+
+    function initMultiSelect(containerId, options) {
+      const container = document.getElementById(containerId);
+      const trigger = container.querySelector(".multi-select-trigger");
+      const panel = container.querySelector(".multi-select-panel");
+      const placeholder = container.dataset.placeholder;
+
+      panel.innerHTML = options
+        .map(
+          (opt) =>
+            `<label class="multi-select-option"><input type="checkbox" value="${opt}" /><span>${opt}</span></label>`
+        )
+        .join("");
+
+      function updateTrigger() {
+        const checked = [...panel.querySelectorAll("input:checked")].map((el) => el.value);
+        if (!checked.length) {
+          trigger.textContent = placeholder;
+          trigger.classList.add("placeholder");
+        } else {
+          trigger.textContent = checked.join("、");
+          trigger.classList.remove("placeholder");
+        }
+      }
+
+      trigger.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const willOpen = !container.classList.contains("open");
+        document.querySelectorAll(".multi-select.open").forEach((el) => el.classList.remove("open"));
+        if (willOpen) container.classList.add("open");
+      });
+
+      panel.addEventListener("click", (e) => e.stopPropagation());
+      panel.addEventListener("change", updateTrigger);
+
+      container.getValues = () =>
+        [...panel.querySelectorAll("input:checked")].map((el) => el.value);
+
+      container.reset = () => {
+        panel.querySelectorAll("input").forEach((el) => (el.checked = false));
+        updateTrigger();
+      };
+
+      updateTrigger();
+    }
+
+    document.addEventListener("click", () => {
+      document.querySelectorAll(".multi-select.open").forEach((el) => el.classList.remove("open"));
+    });
+
+    function applyFilter() {
+      const productIds = parseMultiInput(document.getElementById("filterProductId").value);
+      const creator = document.getElementById("filterCreator").value;
+      const auditor = document.getElementById("filterAuditor").value;
+      const site = document.getElementById("filterSite").value;
+      const status = document.getElementById("filterStatus").value;
+
+      filteredRecords = records.filter((row) => {
+        if (productIds.length && !productIds.includes(row.productId)) return false;
+        if (site && row.site !== site) return false;
+        if (status && row.status !== status) return false;
+        if (creator && row.creator !== creator) return false;
+        if (auditor && row.auditor !== auditor) return false;
+        return true;
+      });
+
+      renderTable();
+    }
+
+    function resetFilter() {
+      document.getElementById("filterProductId").value = "";
+      document.getElementById("filterCreator").value = "";
+      document.getElementById("filterAuditor").value = "";
+      document.getElementById("filterSite").value = "";
+      document.getElementById("filterStatus").value = "";
+      ["filterCreator", "filterAuditor", "filterSite", "filterStatus"].forEach((id) => {
+        syncPlaceholderColor(document.getElementById(id));
+      });
+      filteredRecords = [...records];
+      renderTable();
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById("tableBody");
+      document.getElementById("checkAll").checked = false;
+      const colCount = 13;
+
+      tbody.innerHTML = filteredRecords
+        .map((row) => {
+          const info = getProductInfo(row.productId);
+          const items = row.items || [];
+          const isFinal = row.status === "审核通过" || row.status === "拒绝";
+          const actionBtn = isFinal
+            ? `<button type="button" class="link-btn is-view view-btn">查看</button>`
+            : `<button type="button" class="link-btn audit-btn">审核</button>`;
+          const expanded = expandedIds.has(row.id);
+          const expandLabel = expanded ? "收起" : "展开";
+
+          const childRows = items
+            .map(
+              (item) => `
+                <tr>
+                  <td>${item.erpSku}</td>
+                  <td class="child-price">${formatPrice(row.site, item.minPrice)}</td>
+                </tr>
+              `
+            )
+            .join("");
+
+          const detailRow = expanded
+            ? `<tr class="child-detail-row" data-parent-id="${row.id}">
+                <td colspan="${colCount}">
+                  <div class="child-detail-wrap">
+                    <table class="child-table">
+                      <thead>
+                        <tr>
+                          <th>ERPSKU</th>
+                          <th>刊登最低金额</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${childRows || `<tr><td colspan="2">暂无 ERPSKU</td></tr>`}
+                      </tbody>
+                    </table>
+                  </div>
+                </td>
+              </tr>`
+            : "";
+
+          return `
+            <tr class="parent-row ${expanded ? "is-expanded" : ""}" data-id="${row.id}">
+              <td class="checkbox-cell"><input type="checkbox" class="row-check" /></td>
+              <td class="expand-cell">
+                <button type="button" class="expand-btn" title="${expandLabel}" aria-label="${expandLabel}"></button>
+              </td>
+              <td><img class="product-thumb" src="${info.image}" alt="${info.name}" /></td>
+              <td title="${info.name}">${info.name}</td>
+              <td>${row.productId}</td>
+              <td>${row.site}</td>
+              <td>${formatPriceRange(row.site, items)}</td>
+              <td><span class="status">${row.status}</span></td>
+              <td>${row.creator}</td>
+              <td>${row.auditor || "--"}</td>
+              <td>${row.createdAt}</td>
+              <td title="${row.remark || ""}">${row.remark || "--"}</td>
+              <td>
+                ${actionBtn}
+                <button type="button" class="link-btn log-btn">日志</button>
+              </td>
+            </tr>
+            ${detailRow}
+          `;
+        })
+        .join("");
+
+      document.getElementById("totalTip").textContent = `共 ${filteredRecords.length} 条数据`;
+    }
+
+    function setAuditFormReadonly(readonly) {
+      const fields = ["auditStatus", "auditSite", "auditProductId", "auditRemark"];
+      fields.forEach((id) => {
+        document.getElementById(id).disabled = readonly;
+      });
+      document.querySelectorAll("#auditSkuRows select, #auditSkuRows input, #auditSkuRows button").forEach((el) => {
+        el.disabled = readonly;
+      });
+      document.getElementById("auditConfirmBtn").style.display = readonly ? "none" : "inline-block";
+      document.getElementById("auditCancelBtn").textContent = readonly ? "关闭" : "取消";
+      document.getElementById("auditModalTitle").textContent = readonly ? "查看限价数据" : "审核限价数据";
+    }
+
+    function showMask(id) {
+      document.getElementById(id).classList.add("show");
+    }
+
+    function hideMask(id) {
+      document.getElementById(id).classList.remove("show");
+    }
+
+    function openAddModal() {
+      document.getElementById("addPlatform").value = "amazon";
+      document.getElementById("addProductId").value = "";
+      document.getElementById("addSite").value = "日本";
+      syncCurrencyTag("addSite", "addCurrencyTag");
+      openAddModalDefaultRows();
+      showMask("addModalMask");
+    }
+
+    function openAuditModal(id, viewOnly) {
+      const row = records.find((r) => r.id === id);
+      if (!row) return;
+      auditTargetId = id;
+      auditViewOnly = viewOnly;
+      document.getElementById("auditStatus").value = row.status;
+      document.getElementById("auditSite").value = row.site;
+      document.getElementById("auditProductId").value = row.productId;
+      document.getElementById("auditRemark").value = row.remark || "";
+      syncCurrencyTag("auditSite", "auditCurrencyTag");
+      renderSkuRows("auditSkuRows", row.items && row.items.length ? row.items : [{ erpSku: "", minPrice: "" }], {
+        readonly: viewOnly,
+        showSync: true,
+        showOps: !viewOnly
+      });
+      setAuditFormReadonly(viewOnly);
+      showMask("auditModalMask");
+    }
+
+    function openLogModal(id) {
+      const row = records.find((r) => r.id === id);
+      if (!row) return;
+      document.getElementById("logTableBody").innerHTML = row.logs
+        .map(
+          (log) =>
+            `<tr><td>${log.operator}</td><td>${log.content}</td><td>${log.time}</td></tr>`
+        )
+        .join("");
+      showMask("logModalMask");
+    }
+
+    function nowStr() {
+      const d = new Date();
+      const pad = (n) => String(n).padStart(2, "0");
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    }
+
+    function getSelectedIds() {
+      return [...document.querySelectorAll("#tableBody .row-check:checked")].map((el) =>
+        Number(el.closest("tr").dataset.id)
+      );
+    }
+
+    document.getElementById("searchBtn").addEventListener("click", applyFilter);
+    document.getElementById("resetBtn").addEventListener("click", resetFilter);
+    document.getElementById("addBtn").addEventListener("click", openAddModal);
+
+    document.getElementById("deleteBtn").addEventListener("click", () => {
+      const ids = getSelectedIds();
+      if (!ids.length) {
+        alert("请先勾选要删除的数据");
+        return;
+      }
+      if (!confirm(`确认删除选中的 ${ids.length} 条数据？`)) return;
+      records = records.filter((r) => !ids.includes(r.id));
+      applyFilter();
+    });
+
+    document.getElementById("checkAll").addEventListener("change", (e) => {
+      document.querySelectorAll("#tableBody .row-check").forEach((el) => {
+        el.checked = e.target.checked;
+      });
+    });
+
+    document.getElementById("listingCheckAll").addEventListener("change", (e) => {
+      document.querySelectorAll("#listingTableBody .listing-row-check").forEach((el) => {
+        el.checked = e.target.checked;
+      });
+    });
+
+    document.getElementById("listingTableBody").addEventListener("change", (e) => {
+      if (!e.target.classList.contains("listing-row-check")) return;
+      const all = [...document.querySelectorAll("#listingTableBody .listing-row-check")];
+      document.getElementById("listingCheckAll").checked =
+        all.length > 0 && all.every((el) => el.checked);
+    });
+
+    document.getElementById("listingTableBody").addEventListener("click", (e) => {
+      const tr = e.target.closest("tr");
+      if (!tr) return;
+      const id = Number(tr.dataset.id);
+      if (e.target.classList.contains("listing-edit-price-btn")) {
+        if (!validatePendingLinks([id], false)) return;
+        openListingPriceModal([id]);
+      }
+      if (e.target.classList.contains("listing-delete-link-btn")) {
+        if (!validatePendingLinks([id], false)) return;
+        deleteExternalListingLinks([id]);
+      }
+      if (e.target.classList.contains("listing-view-btn")) {
+        openListingPriceModal([id], true);
+      }
+      if (e.target.classList.contains("listing-log-btn")) {
+        openListingLogModal(id);
+      }
+    });
+
+    document.getElementById("listingBatchPriceBtn").addEventListener("click", () => {
+      const ids = [...document.querySelectorAll("#listingTableBody .listing-row-check:checked")]
+        .map((checkbox) => Number(checkbox.closest("tr").dataset.id));
+      if (!ids.length) {
+        alert("请先勾选要修改售价的数据");
+        return;
+      }
+      if (!validatePendingLinks(ids, true)) return;
+      openListingPriceModal(ids);
+    });
+
+    document.getElementById("listingBatchDeleteLinkBtn").addEventListener("click", () => {
+      const ids = [...document.querySelectorAll("#listingTableBody .listing-row-check:checked")]
+        .map((checkbox) => Number(checkbox.closest("tr").dataset.id));
+      if (!ids.length) {
+        alert("请先勾选要删除外部链接的数据");
+        return;
+      }
+      if (!validatePendingLinks(ids, true)) return;
+      deleteExternalListingLinks(ids);
+    });
+
+    document.getElementById("listingPriceApplyBtn").addEventListener("click", () => {
+      const value = Number(document.getElementById("listingPriceValue").value);
+      const mode = document.getElementById("listingPriceMode").value;
+      if (!Number.isFinite(value) || value < 0) {
+        alert("请输入有效的调整值");
+        return;
+      }
+
+      document.querySelectorAll("#listingPriceList .price-item").forEach((item) => {
+        const row = listingRecords.find((record) => record.id === Number(item.dataset.id));
+        const input = item.querySelector(".listing-new-price");
+        const result = applyPriceMode(Number(row.price), value, mode);
+        input.value = result.toFixed(2);
+      });
+    });
+
+    document.getElementById("listingPriceMode").addEventListener("change", syncListingPriceModeUi);
+
+    document.getElementById("listingPriceConfirmBtn").addEventListener("click", () => {
+      const items = [...document.querySelectorAll("#listingPriceList .price-item")];
+      for (const item of items) {
+        const price = Number(item.querySelector(".listing-new-price").value);
+        if (!Number.isFinite(price) || price <= 0) {
+          alert("新售价须大于 0");
+          return;
+        }
+      }
+
+      items.forEach((item) => {
+        const row = listingRecords.find((record) => record.id === Number(item.dataset.id));
+        const oldPrice = row.price;
+        const newPrice = Number(item.querySelector(".listing-new-price").value);
+        row.price = newPrice;
+        row.processStatus = "修改售价成功";
+        if (!row.logs) row.logs = [];
+        row.logs.push({
+          modifier: "张管理",
+          content: `修改售价：${formatPrice(row.site, oldPrice)} → ${formatPrice(row.site, newPrice)}`,
+          time: nowStr()
+        });
+      });
+      closeListingPriceModal();
+      applyListingFilter();
+    });
+
+    document.getElementById("listingPriceCloseX").addEventListener("click", closeListingPriceModal);
+    document.getElementById("listingPriceCancelBtn").addEventListener("click", closeListingPriceModal);
+    document.getElementById("listingLogCloseBtn").addEventListener("click", () => {
+      hideMask("listingLogModalMask");
+    });
+
+    document.getElementById("addCancelBtn").addEventListener("click", () => hideMask("addModalMask"));
+    document.getElementById("auditCancelBtn").addEventListener("click", () => hideMask("auditModalMask"));
+    document.getElementById("logCloseBtn").addEventListener("click", () => hideMask("logModalMask"));
+
+    let addProductTimer = null;
+    document.getElementById("addProductId").addEventListener("input", () => {
+      clearTimeout(addProductTimer);
+      addProductTimer = setTimeout(loadAddSkuByProductId, 300);
+    });
+    document.getElementById("addProductId").addEventListener("blur", loadAddSkuByProductId);
+
+    function bindSkuEditorEvents(containerId) {
+      const container = document.getElementById(containerId);
+      container.addEventListener("click", (e) => {
+        if (e.target.classList.contains("sku-sync-btn")) {
+          syncSkuPrices(containerId);
+          return;
+        }
+        const row = e.target.closest(".sku-row");
+        if (!row) return;
+
+        if (e.target.classList.contains("sku-add-btn")) {
+          const productId =
+            containerId === "addSkuRows"
+              ? document.getElementById("addProductId").value.trim()
+              : document.getElementById("auditProductId").value.trim();
+          const items = collectSkuRows(containerId);
+          const newSku = nextMockErpSku(
+            productId,
+            items.map((i) => i.erpSku)
+          );
+          items.splice(Number(row.dataset.index) + 1, 0, { erpSku: newSku, minPrice: "" });
+          renderSkuRows(containerId, items, {
+            emptyTipId: containerId === "addSkuRows" ? "addSkuEmptyTip" : null
+          });
+          return;
+        }
+
+        if (e.target.classList.contains("sku-del-btn")) {
+          let items = collectSkuRows(containerId);
+          if (items.length <= 1) {
+            alert("至少保留一行");
+            return;
+          }
+          items.splice(Number(row.dataset.index), 1);
+          renderSkuRows(containerId, items, {
+            emptyTipId: containerId === "addSkuRows" ? "addSkuEmptyTip" : null
+          });
+        }
+      });
+    }
+
+    bindSkuEditorEvents("addSkuRows");
+    bindSkuEditorEvents("auditSkuRows");
+
+    document.getElementById("addConfirmBtn").addEventListener("click", () => {
+      const platform = document.getElementById("addPlatform").value;
+      const site = document.getElementById("addSite").value;
+      const productId = document.getElementById("addProductId").value.trim();
+      const user = "李婷";
+      const items = collectSkuRows("addSkuRows");
+
+      if (!productId) {
+        alert("请输入产品ID");
+        return;
+      }
+      if (!items.length) {
+        alert("请至少添加一条 ERPSKU");
+        return;
+      }
+      for (let i = 0; i < items.length; i++) {
+        if (!items[i].erpSku) {
+          alert(`第 ${i + 1} 行 ERPSKU 不能为空`);
+          return;
+        }
+        if (!items[i].minPrice || items[i].minPrice <= 0) {
+          alert(`第 ${i + 1} 行刊登最低金额须大于 0`);
+          return;
+        }
+      }
+
+      const time = nowStr();
+      const newRow = {
+        id: nextId++,
+        platform,
+        productId,
+        site,
+        status: "待审核",
+        creator: user,
+        auditor: "",
+        createdAt: time,
+        remark: "",
+        items: items.map((item) => ({ erpSku: item.erpSku, minPrice: item.minPrice })),
+        logs: [
+          {
+            operator: user,
+            content: `录入限价：平台=${platform}，站点=${site}，产品ID=${productId}，共${items.length}个ERPSKU`,
+            time
+          }
+        ]
+      };
+      records = [newRow, ...records];
+      expandedIds.add(newRow.id);
+
+      hideMask("addModalMask");
+      applyFilter();
+    });
+
+    document.getElementById("auditConfirmBtn").addEventListener("click", () => {
+      if (auditViewOnly) return;
+      const row = records.find((r) => r.id === auditTargetId);
+      if (!row) return;
+
+      const status = document.getElementById("auditStatus").value;
+      const site = document.getElementById("auditSite").value;
+      const productId = document.getElementById("auditProductId").value.trim();
+      const remark = document.getElementById("auditRemark").value.trim();
+      const items = collectSkuRows("auditSkuRows");
+      const user = "张管理";
+      const time = nowStr();
+
+      if (!productId) {
+        alert("请输入产品ID");
+        return;
+      }
+      if (!items.length) {
+        alert("请至少保留一条 ERPSKU");
+        return;
+      }
+      for (let i = 0; i < items.length; i++) {
+        if (!items[i].erpSku) {
+          alert(`第 ${i + 1} 行 ERPSKU 不能为空`);
+          return;
+        }
+        if (!items[i].minPrice || items[i].minPrice <= 0) {
+          alert(`第 ${i + 1} 行刊登最低金额须大于 0`);
+          return;
+        }
+      }
+      if (status === "拒绝" && !remark) {
+        alert("拒绝时请填写备注");
+        return;
+      }
+
+      row.site = site;
+      row.productId = productId;
+      row.items = items.map((item) => ({ erpSku: item.erpSku, minPrice: item.minPrice }));
+      row.status = status;
+      row.remark = remark;
+      row.auditor = status === "审核通过" || status === "拒绝" ? user : "";
+
+      const actionText =
+        status === "审核通过"
+          ? `审核通过：站点=${site}，产品ID=${productId}，共${items.length}个ERPSKU`
+          : status === "拒绝"
+            ? `审核拒绝：${remark}`
+            : "改回待审核";
+
+      row.logs.push({ operator: user, content: actionText, time });
+      hideMask("auditModalMask");
+      applyFilter();
+    });
+
+    function toggleExpand(id) {
+      if (expandedIds.has(id)) expandedIds.delete(id);
+      else expandedIds.add(id);
+      renderTable();
+    }
+
+    document.getElementById("tableBody").addEventListener("click", (e) => {
+      const parentTr = e.target.closest("tr.parent-row");
+      if (!parentTr) return;
+      const id = Number(parentTr.dataset.id);
+
+      if (e.target.classList.contains("expand-btn")) {
+        e.preventDefault();
+        toggleExpand(id);
+        return;
+      }
+      if (e.target.classList.contains("audit-btn")) {
+        openAuditModal(id, false);
+      }
+      if (e.target.classList.contains("view-btn")) {
+        openAuditModal(id, true);
+      }
+      if (e.target.classList.contains("log-btn")) {
+        openLogModal(id);
+      }
+    });
+
+    document.getElementById("tableBody").addEventListener("change", (e) => {
+      if (!e.target.classList.contains("row-check")) return;
+      const all = [...document.querySelectorAll("#tableBody .row-check")];
+      document.getElementById("checkAll").checked =
+        all.length > 0 && all.every((el) => el.checked);
+    });
+
+    document.getElementById("listingSearchBtn").addEventListener("click", applyListingFilter);
+    document.getElementById("listingResetBtn").addEventListener("click", resetListingFilter);
+
+    initTabs();
+    initSiteSelects();
+    initListingSelects();
+    initPersonSelects();
+    renderTable();
+    applyListingFilter();
+  </script>
+</body>
+</html>
