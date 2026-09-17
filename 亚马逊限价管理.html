@@ -468,6 +468,19 @@
       line-height: 1.35;
     }
 
+    .product-info-lines {
+      min-width: 0;
+      width: 100%;
+    }
+
+    .product-info-lines > span {
+      display: block;
+      width: 100%;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
     .product-info-lines .sub-line,
     .asin-lines .sub-line {
       color: #909399;
@@ -1055,7 +1068,7 @@
                     <th class="checkbox-cell"><input type="checkbox" id="checkAll" /></th>
                     <th class="expand-cell"></th>
                     <th style="width: 72px;">图片</th>
-                    <th style="width: 160px;">产品信息</th>
+                    <th style="width: 220px;">产品信息</th>
                     <th style="width: 100px;">产品ID</th>
                     <th style="width: 90px;">平台</th>
                     <th style="width: 80px;">站点</th>
@@ -1137,21 +1150,21 @@
                   <tr>
                     <th class="checkbox-cell"><input type="checkbox" id="listingCheckAll" /></th>
                     <th style="width: 72px;">图片</th>
-                    <th style="width: 260px;">产品信息</th>
+                    <th style="width: 310px;">产品信息</th>
                     <th style="width: 110px;">产品ID</th>
                     <th style="width: 140px;">卖家SKU</th>
                     <th style="width: 150px;">ERPSKU</th>
                     <th style="width: 160px;">ASIN</th>
                     <th style="width: 90px;">平台</th>
                     <th style="width: 80px;">站点</th>
-                    <th style="width: 140px;">店铺</th>
-                    <th style="width: 110px;">链接负责人</th>
+                    <th style="width: 110px;">店铺</th>
+                    <th style="width: 90px;">链接负责人</th>
                     <th style="width: 110px;">售价</th>
                     <th style="width: 130px;">刊登最低金额</th>
                     <th style="width: 120px;">处理状态</th>
                     <th style="width: 90px;">出现次数</th>
                     <th style="width: 158px;">创建时间</th>
-                    <th style="width: 190px;">操作</th>
+                    <th style="width: 250px;">操作</th>
                   </tr>
                 </thead>
                 <tbody id="listingTableBody"></tbody>
@@ -1355,19 +1368,19 @@
     ];
 
     const PRODUCT_MAP = {
-      "10123001": { name: "无线蓝牙耳机 Pro", image: "https://picsum.photos/seed/p10123001/96/96" },
-      "10123002": { name: "USB-C 快充数据线 2m", image: "https://picsum.photos/seed/p10123002/96/96" },
-      "10123003": { name: "硅胶手机保护壳", image: "https://picsum.photos/seed/p10123003/96/96" },
-      "10123004": { name: "便携迷你风扇", image: "https://picsum.photos/seed/p10123004/96/96" },
-      "10123005": { name: "LED 台灯护眼版", image: "https://picsum.photos/seed/p10123005/96/96" }
+      "10123001": { name: "无线蓝牙降噪耳机 Pro 长续航运动入耳式耳机", image: "https://picsum.photos/seed/p10123001/96/96" },
+      "10123002": { name: "USB-C 快充数据线 2m 加长耐弯折编织充电线", image: "https://picsum.photos/seed/p10123002/96/96" },
+      "10123003": { name: "液态硅胶手机保护壳 防摔防指纹全包软壳", image: "https://picsum.photos/seed/p10123003/96/96" },
+      "10123004": { name: "便携迷你手持风扇 USB充电静音大风力款", image: "https://picsum.photos/seed/p10123004/96/96" },
+      "10123005": { name: "LED 护眼台灯 无级调光学生宿舍阅读学习灯", image: "https://picsum.photos/seed/p10123005/96/96" }
     };
 
     const LISTING_TITLE_MAP = {
-      "10123001": "Wireless Bluetooth Earbuds Pro",
-      "10123002": "USB-C Fast Charging Cable 2m",
-      "10123003": "Soft Silicone Phone Case",
-      "10123004": "Portable Mini Cooling Fan",
-      "10123005": "LED Eye-Care Desk Lamp"
+      "10123001": "Wireless Bluetooth Earbuds Pro with Active Noise Cancelling and Long Battery Life",
+      "10123002": "USB-C Fast Charging Cable 2m Durable Braided Cord for Phones and Tablets",
+      "10123003": "Soft Liquid Silicone Phone Case Shockproof Full Body Protective Cover",
+      "10123004": "Portable Mini Handheld Cooling Fan USB Rechargeable Quiet Powerful Airflow",
+      "10123005": "LED Eye-Care Desk Lamp with Stepless Dimming for Reading and Study"
     };
 
     function buildMockErpSkus(productId, count) {
@@ -1894,8 +1907,8 @@
               <td><img class="product-thumb" src="${product.image}" alt="${product.name}" /></td>
               <td>
                 <div class="product-info-lines">
-                  <span title="${listingTitle}">Listing标题：${listingTitle}</span>
-                  <span class="sub-line" title="${product.name}">产品列表标题：${product.name}</span>
+                  <span title="Listing标题：${listingTitle}">Listing标题：${listingTitle}</span>
+                  <span class="sub-line" title="产品列表标题：${product.name}">产品列表标题：${product.name}</span>
                 </div>
               </td>
               <td>${row.productId}</td>
