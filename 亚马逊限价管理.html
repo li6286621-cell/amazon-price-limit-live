@@ -171,6 +171,45 @@
       outline: none;
       background: #fff;
       color: var(--text);
+      box-sizing: border-box;
+    }
+
+    .form-item { position: relative; }
+
+    .filter-clear {
+      display: none;
+      position: absolute;
+      top: 50%;
+      right: 8px;
+      z-index: 2;
+      width: 18px;
+      height: 18px;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+      color: #a8abb2;
+      font-size: 18px;
+      line-height: 17px;
+      cursor: pointer;
+      transform: translateY(-50%);
+    }
+
+    .form-item.has-filter-value .filter-clear { display: block; }
+
+    .form-item.has-filter-value input,
+    .form-item.has-filter-value select {
+      padding-right: 36px;
+    }
+
+    .form-item.has-filter-value select {
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    .filter-clear:hover {
+      background: #f2f3f5;
+      color: #606266;
     }
 
     .form-item input::placeholder { color: #a8abb2; }
@@ -857,6 +896,15 @@
       margin-bottom: 10px;
     }
 
+    #addSkuRows,
+    #auditSkuRows {
+      max-height: 440px;
+      overflow-x: hidden;
+      overflow-y: auto;
+      padding-right: 6px;
+      scrollbar-gutter: stable;
+    }
+
     .sku-row select,
     .sku-row input {
       width: 100%;
@@ -871,9 +919,9 @@
     }
 
     .sku-row input.sku-erp {
-      background: #f5f7fa;
-      color: #606266;
-      cursor: default;
+      background: #fff;
+      color: #303133;
+      cursor: text;
     }
 
     .sku-row select:focus,
@@ -961,12 +1009,17 @@
           <div class="card filter-panel">
             <div class="filter-grid">
               <div class="form-item">
-                <input type="text" id="filterProductId" placeholder="产品ID（多个以空格或逗号分隔）" />
+                <select id="filterPlatform">
+                  <option value="" selected>平台</option>
+                </select>
               </div>
               <div class="form-item">
                 <select id="filterSite">
                   <option value="" selected>站点</option>
                 </select>
+              </div>
+              <div class="form-item">
+                <input type="text" id="filterProductId" placeholder="产品ID（多个以空格或逗号分隔）" />
               </div>
               <div class="form-item">
                 <select id="filterStatus">
@@ -1004,6 +1057,7 @@
                     <th style="width: 72px;">图片</th>
                     <th style="width: 160px;">产品信息</th>
                     <th style="width: 100px;">产品ID</th>
+                    <th style="width: 90px;">平台</th>
                     <th style="width: 80px;">站点</th>
                     <th style="width: 140px;">刊登最低金额范围</th>
                     <th style="width: 90px;">审核状态</th>
@@ -1088,6 +1142,7 @@
                     <th style="width: 140px;">卖家SKU</th>
                     <th style="width: 150px;">ERPSKU</th>
                     <th style="width: 160px;">ASIN</th>
+                    <th style="width: 90px;">平台</th>
                     <th style="width: 80px;">站点</th>
                     <th style="width: 140px;">店铺</th>
                     <th style="width: 110px;">链接负责人</th>
@@ -1095,7 +1150,7 @@
                     <th style="width: 130px;">刊登最低金额</th>
                     <th style="width: 120px;">处理状态</th>
                     <th style="width: 90px;">出现次数</th>
-                    <th style="width: 158px;">查询时间</th>
+                    <th style="width: 158px;">创建时间</th>
                     <th style="width: 190px;">操作</th>
                   </tr>
                 </thead>
@@ -1118,11 +1173,11 @@
       <div class="modal-header">录入限价数据</div>
       <div class="modal-body">
         <div class="modal-row">
-          <label for="addPlatform">平台</label>
+          <label for="addPlatform"><span class="req">*</span>平台</label>
           <select id="addPlatform"></select>
         </div>
         <div class="modal-row">
-          <label for="addSite">站点</label>
+          <label for="addSite"><span class="req">*</span>站点</label>
           <select id="addSite"></select>
         </div>
         <div class="modal-row">
@@ -1140,6 +1195,10 @@
             <div id="addSkuRows"></div>
             <div class="sku-empty-tip" id="addSkuEmptyTip">请先输入产品ID以带出 ERPSKU</div>
           </div>
+        </div>
+        <div class="modal-row">
+          <label for="addRemark">备注</label>
+          <textarea id="addRemark" placeholder="请输入备注"></textarea>
         </div>
       </div>
       <div class="modal-footer">
@@ -1163,7 +1222,11 @@
       </div>
       <div class="modal-body">
         <div class="modal-row">
-          <label for="auditSite">站点</label>
+          <label for="auditPlatform"><span class="req">*</span>平台</label>
+          <select id="auditPlatform"></select>
+        </div>
+        <div class="modal-row">
+          <label for="auditSite"><span class="req">*</span>站点</label>
           <select id="auditSite"></select>
         </div>
         <div class="modal-row">
@@ -1183,7 +1246,7 @@
         </div>
         <div class="modal-row">
           <label for="auditRemark">备注</label>
-          <textarea id="auditRemark" placeholder="拒绝时建议填写原因"></textarea>
+          <textarea id="auditRemark" placeholder="请输入备注"></textarea>
         </div>
       </div>
       <div class="modal-footer">
@@ -1312,17 +1375,6 @@
       const baseRight = 3985512;
       const n = count == null ? 10 : count;
       return Array.from({ length: n }, (_, i) => `${left}-${baseRight + i}`);
-    }
-
-    function nextMockErpSku(productId, existingSkus) {
-      const left = String(productId || "1057609").replace(/\D/g, "") || "1057609";
-      let maxRight = 3985511;
-      existingSkus.forEach((sku) => {
-        const parts = String(sku).split("-");
-        const right = parseInt(parts[1], 10);
-        if (!Number.isNaN(right) && right > maxRight) maxRight = right;
-      });
-      return `${left}-${maxRight + 1}`;
     }
 
     let listingRecords = [
@@ -1570,7 +1622,7 @@
 
           return `
             <div class="sku-row" data-index="${index}">
-              <input type="text" class="sku-erp" value="${row.erpSku || ""}" readonly />
+              <input type="text" class="sku-erp" value="${row.erpSku || ""}" ${readonly ? "disabled" : ""} />
               <input type="number" class="sku-price" step="0.01" min="0" value="${row.minPrice ?? ""}" placeholder="刊登最低金额" ${readonly ? "disabled" : ""} />
               ${syncCell}
               ${opsCell}
@@ -1629,15 +1681,53 @@
       else sel.classList.remove("placeholder");
     }
 
+    function syncFilterClearState(control) {
+      const item = control.closest(".form-item");
+      if (item) item.classList.toggle("has-filter-value", control.value !== "");
+    }
+
+    function syncFilterClearStates() {
+      document.querySelectorAll(".filter-panel .form-item input, .filter-panel .form-item select")
+        .forEach(syncFilterClearState);
+    }
+
+    function initFilterClearButtons() {
+      document.querySelectorAll(".filter-panel .form-item").forEach((item) => {
+        const control = item.querySelector("input, select");
+        if (!control || item.querySelector(".filter-clear")) return;
+
+        const clearBtn = document.createElement("button");
+        clearBtn.type = "button";
+        clearBtn.className = "filter-clear";
+        clearBtn.textContent = "×";
+        clearBtn.title = "清除此筛选项";
+        clearBtn.setAttribute("aria-label", "清除此筛选项");
+        clearBtn.addEventListener("click", () => {
+          control.value = "";
+          if (control.tagName === "SELECT") syncPlaceholderColor(control);
+          syncFilterClearState(control);
+          control.dispatchEvent(new Event("input", { bubbles: true }));
+          control.dispatchEvent(new Event("change", { bubbles: true }));
+          control.focus();
+        });
+        control.addEventListener("input", () => syncFilterClearState(control));
+        control.addEventListener("change", () => syncFilterClearState(control));
+        item.appendChild(clearBtn);
+        syncFilterClearState(control);
+      });
+    }
+
     function initPersonSelects() {
       fillSelect("filterCreator", PEOPLE, "添加人");
       fillSelect("filterAuditor", PEOPLE, "审核人");
+      fillSelect("filterPlatform", PLATFORMS, "平台");
       fillSelect("filterSite", SITES, "站点");
       fillSelect("filterStatus", STATUSES, "审核状态");
       fillSelect("listingFilterOwner", PEOPLE, "链接负责人");
       [
         "filterCreator",
         "filterAuditor",
+        "filterPlatform",
         "filterSite",
         "filterStatus",
         "listingFilterOwner",
@@ -1773,6 +1863,7 @@
       ].forEach((id) => {
         syncPlaceholderColor(document.getElementById(id));
       });
+      syncFilterClearStates();
       applyListingFilter();
     }
 
@@ -1816,6 +1907,7 @@
                   <span class="sub-line">子ASIN：${childAsin}</span>
                 </div>
               </td>
+              <td>${row.platform || "amazon"}</td>
               <td>${row.site}</td>
               <td>${row.store}</td>
               <td>${row.owner}</td>
@@ -1967,11 +2059,13 @@
     }
 
     function initSiteSelects() {
-      const platformSelect = document.getElementById("addPlatform");
-      platformSelect.innerHTML = PLATFORMS
-        .map((platform) => `<option value="${platform}">${platform}</option>`)
-        .join("");
-      platformSelect.value = "amazon";
+      ["addPlatform", "auditPlatform"].forEach((id) => {
+        const platformSelect = document.getElementById(id);
+        platformSelect.innerHTML = PLATFORMS
+          .map((platform) => `<option value="${platform}">${platform}</option>`)
+          .join("");
+        platformSelect.value = "amazon";
+      });
 
       ["addSite", "auditSite"].forEach((id) => {
         const sel = document.getElementById(id);
@@ -2043,11 +2137,13 @@
       const productIds = parseMultiInput(document.getElementById("filterProductId").value);
       const creator = document.getElementById("filterCreator").value;
       const auditor = document.getElementById("filterAuditor").value;
+      const platform = document.getElementById("filterPlatform").value;
       const site = document.getElementById("filterSite").value;
       const status = document.getElementById("filterStatus").value;
 
       filteredRecords = records.filter((row) => {
         if (productIds.length && !productIds.includes(row.productId)) return false;
+        if (platform && (row.platform || "amazon") !== platform) return false;
         if (site && row.site !== site) return false;
         if (status && row.status !== status) return false;
         if (creator && row.creator !== creator) return false;
@@ -2062,11 +2158,13 @@
       document.getElementById("filterProductId").value = "";
       document.getElementById("filterCreator").value = "";
       document.getElementById("filterAuditor").value = "";
+      document.getElementById("filterPlatform").value = "";
       document.getElementById("filterSite").value = "";
       document.getElementById("filterStatus").value = "";
-      ["filterCreator", "filterAuditor", "filterSite", "filterStatus"].forEach((id) => {
+      ["filterCreator", "filterAuditor", "filterPlatform", "filterSite", "filterStatus"].forEach((id) => {
         syncPlaceholderColor(document.getElementById(id));
       });
+      syncFilterClearStates();
       filteredRecords = [...records];
       renderTable();
     }
@@ -2074,7 +2172,7 @@
     function renderTable() {
       const tbody = document.getElementById("tableBody");
       document.getElementById("checkAll").checked = false;
-      const colCount = 13;
+      const colCount = 14;
 
       tbody.innerHTML = filteredRecords
         .map((row) => {
@@ -2127,6 +2225,7 @@
               <td><img class="product-thumb" src="${info.image}" alt="${info.name}" /></td>
               <td title="${info.name}">${info.name}</td>
               <td>${row.productId}</td>
+              <td>${row.platform || "amazon"}</td>
               <td>${row.site}</td>
               <td>${formatPriceRange(row.site, items)}</td>
               <td><span class="status">${row.status}</span></td>
@@ -2148,7 +2247,13 @@
     }
 
     function setAuditFormReadonly(readonly) {
-      const fields = ["auditStatus", "auditSite", "auditProductId", "auditRemark"];
+      const fields = [
+        "auditStatus",
+        "auditPlatform",
+        "auditSite",
+        "auditProductId",
+        "auditRemark"
+      ];
       fields.forEach((id) => {
         document.getElementById(id).disabled = readonly;
       });
@@ -2171,6 +2276,7 @@
     function openAddModal() {
       document.getElementById("addPlatform").value = "amazon";
       document.getElementById("addProductId").value = "";
+      document.getElementById("addRemark").value = "";
       document.getElementById("addSite").value = "日本";
       syncCurrencyTag("addSite", "addCurrencyTag");
       openAddModalDefaultRows();
@@ -2183,6 +2289,7 @@
       auditTargetId = id;
       auditViewOnly = viewOnly;
       document.getElementById("auditStatus").value = row.status;
+      document.getElementById("auditPlatform").value = row.platform || "amazon";
       document.getElementById("auditSite").value = row.site;
       document.getElementById("auditProductId").value = row.productId;
       document.getElementById("auditRemark").value = row.remark || "";
@@ -2369,16 +2476,8 @@
         if (!row) return;
 
         if (e.target.classList.contains("sku-add-btn")) {
-          const productId =
-            containerId === "addSkuRows"
-              ? document.getElementById("addProductId").value.trim()
-              : document.getElementById("auditProductId").value.trim();
           const items = collectSkuRows(containerId);
-          const newSku = nextMockErpSku(
-            productId,
-            items.map((i) => i.erpSku)
-          );
-          items.splice(Number(row.dataset.index) + 1, 0, { erpSku: newSku, minPrice: "" });
+          items.splice(Number(row.dataset.index) + 1, 0, { erpSku: "", minPrice: "" });
           renderSkuRows(containerId, items, {
             emptyTipId: containerId === "addSkuRows" ? "addSkuEmptyTip" : null
           });
@@ -2406,9 +2505,18 @@
       const platform = document.getElementById("addPlatform").value;
       const site = document.getElementById("addSite").value;
       const productId = document.getElementById("addProductId").value.trim();
+      const remark = document.getElementById("addRemark").value.trim();
       const user = "李婷";
       const items = collectSkuRows("addSkuRows");
 
+      if (!platform) {
+        alert("请选择平台");
+        return;
+      }
+      if (!site) {
+        alert("请选择站点");
+        return;
+      }
       if (!productId) {
         alert("请输入产品ID");
         return;
@@ -2438,12 +2546,12 @@
         creator: user,
         auditor: "",
         createdAt: time,
-        remark: "",
+        remark,
         items: items.map((item) => ({ erpSku: item.erpSku, minPrice: item.minPrice })),
         logs: [
           {
             operator: user,
-            content: `录入限价：平台=${platform}，站点=${site}，产品ID=${productId}，共${items.length}个ERPSKU`,
+            content: `录入限价：平台=${platform}，站点=${site}，产品ID=${productId}，共${items.length}个ERPSKU${remark ? `，备注=${remark}` : ""}`,
             time
           }
         ]
@@ -2461,6 +2569,7 @@
       if (!row) return;
 
       const status = document.getElementById("auditStatus").value;
+      const platform = document.getElementById("auditPlatform").value;
       const site = document.getElementById("auditSite").value;
       const productId = document.getElementById("auditProductId").value.trim();
       const remark = document.getElementById("auditRemark").value.trim();
@@ -2468,6 +2577,14 @@
       const user = "张管理";
       const time = nowStr();
 
+      if (!platform) {
+        alert("请选择平台");
+        return;
+      }
+      if (!site) {
+        alert("请选择站点");
+        return;
+      }
       if (!productId) {
         alert("请输入产品ID");
         return;
@@ -2491,6 +2608,7 @@
         return;
       }
 
+      row.platform = platform;
       row.site = site;
       row.productId = productId;
       row.items = items.map((item) => ({ erpSku: item.erpSku, minPrice: item.minPrice }));
@@ -2500,7 +2618,7 @@
 
       const actionText =
         status === "审核通过"
-          ? `审核通过：站点=${site}，产品ID=${productId}，共${items.length}个ERPSKU`
+          ? `审核通过：平台=${platform}，站点=${site}，产品ID=${productId}，共${items.length}个ERPSKU`
           : status === "拒绝"
             ? `审核拒绝：${remark}`
             : "改回待审核";
@@ -2551,6 +2669,7 @@
     initSiteSelects();
     initListingSelects();
     initPersonSelects();
+    initFilterClearButtons();
     renderTable();
     applyListingFilter();
   </script>
