@@ -400,7 +400,7 @@
 
     .child-table {
       width: auto;
-      min-width: 1680px;
+      min-width: 1880px;
       border-collapse: collapse;
       table-layout: fixed;
       font-size: 13px;
@@ -436,11 +436,16 @@
 
     .child-table th:nth-child(1),
     .child-table td:nth-child(1) {
-      width: 720px;
+      width: 360px;
     }
 
     .child-table th:nth-child(2),
     .child-table td:nth-child(2) {
+      width: 720px;
+    }
+
+    .child-table th:nth-child(3),
+    .child-table td:nth-child(3) {
       width: 560px;
     }
 
@@ -864,7 +869,7 @@
     }
 
     .modal.modal-sku {
-      width: 720px;
+      width: 860px;
       max-width: calc(100vw - 32px);
       max-height: calc(100vh - 48px);
       display: flex;
@@ -887,7 +892,7 @@
 
     .sku-editor-head {
       display: grid;
-      grid-template-columns: 1fr 160px 88px 72px;
+      grid-template-columns: 140px 1fr 160px 88px 72px;
       gap: 10px;
       align-items: center;
       margin-bottom: 8px;
@@ -903,7 +908,7 @@
 
     .sku-row {
       display: grid;
-      grid-template-columns: 1fr 160px 88px 72px;
+      grid-template-columns: 140px 1fr 160px 88px 72px;
       gap: 10px;
       align-items: center;
       margin-bottom: 10px;
@@ -1132,6 +1137,12 @@
                   <option value="" selected>处理状态</option>
                 </select>
               </div>
+              <div class="form-item">
+                <input type="text" id="listingFilterCreateTime" placeholder="创建时间" />
+              </div>
+              <div class="form-item">
+                <input type="text" id="listingFilterUpdateTime" placeholder="更新时间" />
+              </div>
               <div class="search-actions">
                 <button type="button" class="btn btn-primary" id="listingSearchBtn">查询</button>
                 <button type="button" class="btn" id="listingResetBtn">重置</button>
@@ -1164,6 +1175,7 @@
                     <th style="width: 120px;">处理状态</th>
                     <th style="width: 90px;">出现次数</th>
                     <th style="width: 158px;">创建时间</th>
+                    <th style="width: 158px;">更新时间</th>
                     <th style="width: 250px;">操作</th>
                   </tr>
                 </thead>
@@ -1200,6 +1212,7 @@
         <div class="modal-row">
           <div class="sku-editor" id="addSkuEditor">
             <div class="sku-editor-head">
+              <div>规格名称</div>
               <div><span class="req">*</span>ERPSKU</div>
               <div><span class="req">*</span>刊登最低金额<span class="currency-inline" id="addCurrencyTag">JPY</span></div>
               <div></div>
@@ -1249,6 +1262,7 @@
         <div class="modal-row">
           <div class="sku-editor" id="auditSkuEditor">
             <div class="sku-editor-head">
+              <div>规格名称</div>
               <div><span class="req">*</span>ERPSKU</div>
               <div><span class="req">*</span>刊登最低金额<span class="currency-inline" id="auditCurrencyTag">JPY</span></div>
               <div></div>
@@ -1390,6 +1404,15 @@
       return Array.from({ length: n }, (_, i) => `${left}-${baseRight + i}`);
     }
 
+    function buildMockSpecNames(count) {
+      const specs = [
+        "黑色,s", "白色,m", "红色,l", "蓝色,xl", "灰色,s",
+        "绿色,m", "粉色,l", "米色,xl", "紫色,s", "橙色,m"
+      ];
+      const n = count == null ? 10 : count;
+      return Array.from({ length: n }, (_, i) => specs[i % specs.length]);
+    }
+
     let listingRecords = [
       {
         id: 1,
@@ -1401,6 +1424,7 @@
         price: 1180,
         hitCount: 3,
         queryTime: "2026-09-15 10:22:11",
+        updateTime: "2026-09-15 10:22:11",
         processStatus: "待处理"
       },
       {
@@ -1413,6 +1437,7 @@
         price: 8.99,
         hitCount: 5,
         queryTime: "2026-09-15 09:48:36",
+        updateTime: "2026-09-16 11:20:05",
         processStatus: "修改售价成功"
       },
       {
@@ -1425,6 +1450,7 @@
         price: 5.50,
         hitCount: 1,
         queryTime: "2026-09-14 17:05:02",
+        updateTime: "2026-09-15 09:12:40",
         processStatus: "修改售价失败"
       },
       {
@@ -1437,6 +1463,7 @@
         price: 850,
         hitCount: 2,
         queryTime: "2026-09-14 15:31:44",
+        updateTime: "2026-09-14 18:05:22",
         processStatus: "删除链接成功",
         linkDeleted: true
       },
@@ -1450,6 +1477,7 @@
         price: 19.90,
         hitCount: 4,
         queryTime: "2026-09-13 11:12:08",
+        updateTime: "2026-09-13 16:48:19",
         processStatus: "删除链接失败"
       }
     ];
@@ -1469,9 +1497,9 @@
         createdAt: "2026-09-15 09:12:03",
         remark: "",
         items: [
-          { erpSku: "10123001-3985512", minPrice: 1280 },
-          { erpSku: "10123001-3985513", minPrice: 1280 },
-          { erpSku: "10123001-3985514", minPrice: 1300 }
+          { specName: "黑色,s", erpSku: "10123001-3985512", minPrice: 1280 },
+          { specName: "白色,m", erpSku: "10123001-3985513", minPrice: 1280 },
+          { specName: "红色,l", erpSku: "10123001-3985514", minPrice: 1300 }
         ],
         logs: [
           { operator: "李婷", content: "录入限价：站点=日本，产品ID=10123001，共3个ERPSKU", time: "2026-09-15 09:12:03" }
@@ -1487,8 +1515,8 @@
         createdAt: "2026-09-14 16:45:18",
         remark: "",
         items: [
-          { erpSku: "10123002-3985512", minPrice: 9.99 },
-          { erpSku: "10123002-3985513", minPrice: 10.99 }
+          { specName: "黑色,s", erpSku: "10123002-3985512", minPrice: 9.99 },
+          { specName: "白色,m", erpSku: "10123002-3985513", minPrice: 10.99 }
         ],
         logs: [
           { operator: "张管理", content: "录入限价：站点=美国，产品ID=10123002，共2个ERPSKU", time: "2026-09-14 16:45:18" }
@@ -1503,7 +1531,7 @@
         auditor: "张管理",
         createdAt: "2026-09-13 11:20:55",
         remark: "金额低于成本价",
-        items: [{ erpSku: "10123003-3985512", minPrice: 6.50 }],
+        items: [{ specName: "透明,s", erpSku: "10123003-3985512", minPrice: 6.50 }],
         logs: [
           { operator: "王明", content: "录入限价：站点=英国，产品ID=10123003，共1个ERPSKU", time: "2026-09-13 11:20:55" },
           { operator: "张管理", content: "审核拒绝：金额低于成本价", time: "2026-09-13 14:02:10" }
@@ -1519,10 +1547,10 @@
         createdAt: "2026-09-12 08:03:29",
         remark: "",
         items: [
-          { erpSku: "10123004-3985512", minPrice: 890 },
-          { erpSku: "10123004-3985513", minPrice: 890 },
-          { erpSku: "10123004-3985514", minPrice: 920 },
-          { erpSku: "10123004-3985515", minPrice: 950 }
+          { specName: "黑色,s", erpSku: "10123004-3985512", minPrice: 890 },
+          { specName: "白色,m", erpSku: "10123004-3985513", minPrice: 890 },
+          { specName: "蓝色,l", erpSku: "10123004-3985514", minPrice: 920 },
+          { specName: "灰色,xl", erpSku: "10123004-3985515", minPrice: 950 }
         ],
         logs: [
           { operator: "陈航", content: "录入限价：站点=日本，产品ID=10123004，共4个ERPSKU", time: "2026-09-12 08:03:29" },
@@ -1538,7 +1566,7 @@
         auditor: "张管理",
         createdAt: "2026-09-11 14:25:10",
         remark: "",
-        items: [{ erpSku: "10123005-3985512", minPrice: 24.90 }],
+        items: [{ specName: "白色,s", erpSku: "10123005-3985512", minPrice: 24.90 }],
         logs: [
           { operator: "孙凯", content: "录入限价：站点=德国，产品ID=10123005，共1个ERPSKU", time: "2026-09-11 14:25:10" },
           { operator: "张管理", content: "审核通过", time: "2026-09-11 15:03:22" }
@@ -1605,6 +1633,7 @@
 
     function collectSkuRows(containerId) {
       return [...document.querySelectorAll(`#${containerId} .sku-row`)].map((row) => ({
+        specName: row.querySelector(".sku-spec").value.trim(),
         erpSku: row.querySelector(".sku-erp").value.trim(),
         minPrice: parseFloat(row.querySelector(".sku-price").value)
       }));
@@ -1635,6 +1664,7 @@
 
           return `
             <div class="sku-row" data-index="${index}">
+              <input type="text" class="sku-spec" value="${row.specName || ""}" placeholder="如：黑色,s" ${readonly ? "disabled" : ""} />
               <input type="text" class="sku-erp" value="${row.erpSku || ""}" ${readonly ? "disabled" : ""} />
               <input type="number" class="sku-price" step="0.01" min="0" value="${row.minPrice ?? ""}" placeholder="刊登最低金额" ${readonly ? "disabled" : ""} />
               ${syncCell}
@@ -1652,20 +1682,25 @@
     function loadAddSkuByProductId() {
       const productId = document.getElementById("addProductId").value.trim();
       if (!productId) {
-        renderSkuRows("addSkuRows", [{ erpSku: "", minPrice: "" }], { emptyTipId: "addSkuEmptyTip" });
+        renderSkuRows("addSkuRows", [{ specName: "", erpSku: "", minPrice: "" }], { emptyTipId: "addSkuEmptyTip" });
         document.getElementById("addSkuEmptyTip").style.display = "none";
         return;
       }
       const erpList = buildMockErpSkus(productId, 10);
+      const specList = buildMockSpecNames(10);
       renderSkuRows(
         "addSkuRows",
-        erpList.map((sku) => ({ erpSku: sku, minPrice: "" })),
+        erpList.map((sku, index) => ({
+          specName: specList[index],
+          erpSku: sku,
+          minPrice: ""
+        })),
         { emptyTipId: "addSkuEmptyTip" }
       );
     }
 
     function openAddModalDefaultRows() {
-      renderSkuRows("addSkuRows", [{ erpSku: "", minPrice: "" }], { emptyTipId: "addSkuEmptyTip" });
+      renderSkuRows("addSkuRows", [{ specName: "", erpSku: "", minPrice: "" }], { emptyTipId: "addSkuEmptyTip" });
       document.getElementById("addSkuEmptyTip").style.display = "none";
     }
 
@@ -1829,6 +1864,8 @@
       const store = document.getElementById("listingFilterStore").value;
       const owner = document.getElementById("listingFilterOwner").value;
       const processStatus = document.getElementById("listingFilterProcessStatus").value;
+      const createTime = document.getElementById("listingFilterCreateTime").value.trim();
+      const updateTime = document.getElementById("listingFilterUpdateTime").value.trim();
       const hitRaw = document.getElementById("listingFilterHitCount").value;
       const hitCount = hitRaw === "" ? null : Number(hitRaw);
 
@@ -1851,6 +1888,8 @@
         if (owner && row.owner !== owner) return false;
         if (processStatus && (row.processStatus || "待处理") !== processStatus) return false;
         if (hitCount !== null && !Number.isNaN(hitCount) && row.hitCount !== hitCount) return false;
+        if (createTime && !(row.queryTime || "").includes(createTime)) return false;
+        if (updateTime && !(row.updateTime || row.queryTime || "").includes(updateTime)) return false;
         return true;
       });
 
@@ -1868,6 +1907,8 @@
       document.getElementById("listingFilterStore").value = "";
       document.getElementById("listingFilterOwner").value = "";
       document.getElementById("listingFilterProcessStatus").value = "";
+      document.getElementById("listingFilterCreateTime").value = "";
+      document.getElementById("listingFilterUpdateTime").value = "";
       [
         "listingFilterSite",
         "listingFilterStore",
@@ -1929,6 +1970,7 @@
               <td><span class="status">${processStatus}</span></td>
               <td>${row.hitCount}</td>
               <td>${row.queryTime}</td>
+              <td>${row.updateTime || row.queryTime || "--"}</td>
               <td>
                 ${operationButtons}
               </td>
@@ -2030,11 +2072,12 @@
       rows.forEach((row) => {
         row.linkDeleted = true;
         row.processStatus = "删除链接成功";
+        row.updateTime = nowStr();
         if (!row.logs) row.logs = [];
         row.logs.push({
           modifier: "张管理",
           content: `删除其它位置的 Listing 链接，卖家SKU=${row.sellerSku}`,
-          time: nowStr()
+          time: row.updateTime
         });
       });
       applyListingFilter();
@@ -2202,6 +2245,7 @@
             .map(
               (item) => `
                 <tr>
+                  <td>${item.specName || "--"}</td>
                   <td>${item.erpSku}</td>
                   <td class="child-price">${formatPrice(row.site, item.minPrice)}</td>
                 </tr>
@@ -2216,12 +2260,13 @@
                     <table class="child-table">
                       <thead>
                         <tr>
+                          <th>规格名称</th>
                           <th>ERPSKU</th>
                           <th>刊登最低金额</th>
                         </tr>
                       </thead>
                       <tbody>
-                        ${childRows || `<tr><td colspan="2">暂无 ERPSKU</td></tr>`}
+                        ${childRows || `<tr><td colspan="3">暂无 ERPSKU</td></tr>`}
                       </tbody>
                     </table>
                   </div>
@@ -2307,7 +2352,7 @@
       document.getElementById("auditProductId").value = row.productId;
       document.getElementById("auditRemark").value = row.remark || "";
       syncCurrencyTag("auditSite", "auditCurrencyTag");
-      renderSkuRows("auditSkuRows", row.items && row.items.length ? row.items : [{ erpSku: "", minPrice: "" }], {
+      renderSkuRows("auditSkuRows", row.items && row.items.length ? row.items : [{ specName: "", erpSku: "", minPrice: "" }], {
         readonly: viewOnly,
         showSync: true,
         showOps: !viewOnly
@@ -2448,13 +2493,15 @@
         const row = listingRecords.find((record) => record.id === Number(item.dataset.id));
         const oldPrice = row.price;
         const newPrice = Number(item.querySelector(".listing-new-price").value);
+        const time = nowStr();
         row.price = newPrice;
         row.processStatus = "修改售价成功";
+        row.updateTime = time;
         if (!row.logs) row.logs = [];
         row.logs.push({
           modifier: "张管理",
           content: `修改售价：${formatPrice(row.site, oldPrice)} → ${formatPrice(row.site, newPrice)}`,
-          time: nowStr()
+          time
         });
       });
       closeListingPriceModal();
@@ -2490,7 +2537,7 @@
 
         if (e.target.classList.contains("sku-add-btn")) {
           const items = collectSkuRows(containerId);
-          items.splice(Number(row.dataset.index) + 1, 0, { erpSku: "", minPrice: "" });
+          items.splice(Number(row.dataset.index) + 1, 0, { specName: "", erpSku: "", minPrice: "" });
           renderSkuRows(containerId, items, {
             emptyTipId: containerId === "addSkuRows" ? "addSkuEmptyTip" : null
           });
@@ -2560,7 +2607,11 @@
         auditor: "",
         createdAt: time,
         remark,
-        items: items.map((item) => ({ erpSku: item.erpSku, minPrice: item.minPrice })),
+        items: items.map((item) => ({
+          specName: item.specName || "",
+          erpSku: item.erpSku,
+          minPrice: item.minPrice
+        })),
         logs: [
           {
             operator: user,
@@ -2624,7 +2675,11 @@
       row.platform = platform;
       row.site = site;
       row.productId = productId;
-      row.items = items.map((item) => ({ erpSku: item.erpSku, minPrice: item.minPrice }));
+      row.items = items.map((item) => ({
+        specName: item.specName || "",
+        erpSku: item.erpSku,
+        minPrice: item.minPrice
+      }));
       row.status = status;
       row.remark = remark;
       row.auditor = status === "审核通过" || status === "拒绝" ? user : "";
