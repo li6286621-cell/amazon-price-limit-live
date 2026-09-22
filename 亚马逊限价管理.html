@@ -2319,6 +2319,11 @@
       document.querySelectorAll("#auditSkuRows select, #auditSkuRows input, #auditSkuRows button").forEach((el) => {
         el.disabled = readonly;
       });
+      if (!readonly && auditMode === "edit") {
+        ["auditPlatform", "auditSite", "auditProductId"].forEach((id) => {
+          document.getElementById(id).disabled = true;
+        });
+      }
       document.getElementById("auditConfirmBtn").style.display = readonly ? "none" : "inline-block";
       document.getElementById("auditCancelBtn").textContent = readonly ? "关闭" : "取消";
       document.getElementById("auditModalTitle").textContent =
