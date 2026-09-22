@@ -1577,6 +1577,7 @@
     let filteredRecords = [...records];
     let auditTargetId = null;
     let auditViewOnly = false;
+    let auditMode = "audit";
     let nextId = 6;
     const expandedIds = new Set();
 
@@ -2236,7 +2237,7 @@
           const items = row.items || [];
           const isFinal = row.status === "审核通过" || row.status === "拒绝";
           const actionBtn = isFinal
-            ? `<button type="button" class="link-btn is-view view-btn">查看</button>`
+            ? `<button type="button" class="link-btn edit-btn">编辑</button>`
             : `<button type="button" class="link-btn audit-btn">审核</button>`;
           const expanded = expandedIds.has(row.id);
           const expandLabel = expanded ? "收起" : "展开";
@@ -2320,7 +2321,10 @@
       });
       document.getElementById("auditConfirmBtn").style.display = readonly ? "none" : "inline-block";
       document.getElementById("auditCancelBtn").textContent = readonly ? "关闭" : "取消";
-      document.getElementById("auditModalTitle").textContent = readonly ? "查看限价数据" : "审核限价数据";
+      document.getElementById("auditModalTitle").textContent =
+        auditMode === "edit" ? "编辑限价数据" : readonly ? "查看限价数据" : "审核限价数据";
+      document.querySelector("#auditModalMask .audit-bar").style.display =
+        auditMode === "edit" ? "none" : "";
     }
 
     function showMask(id) {
@@ -2341,23 +2345,25 @@
       showMask("addModalMask");
     }
 
-    function openAuditModal(id, viewOnly) {
+    function openAuditModal(id, mode) {
       const row = records.find((r) => r.id === id);
       if (!row) return;
       auditTargetId = id;
-      auditViewOnly = viewOnly;
-      document.getElementById("auditStatus").value = row.status;
+      auditMode = mode === "edit" ? "edit" : "audit";
+      auditViewOnly = false;
+      document.getElementById("auditStatus").value =
+        auditMode === "edit" ? "待审核" : row.status;
       document.getElementById("auditPlatform").value = row.platform || "amazon";
       document.getElementById("auditSite").value = row.site;
       document.getElementById("auditProductId").value = row.productId;
       document.getElementById("auditRemark").value = row.remark || "";
       syncCurrencyTag("auditSite", "auditCurrencyTag");
       renderSkuRows("auditSkuRows", row.items && row.items.length ? row.items : [{ specName: "", erpSku: "", minPrice: "" }], {
-        readonly: viewOnly,
+        readonly: false,
         showSync: true,
-        showOps: !viewOnly
+        showOps: true
       });
-      setAuditFormReadonly(viewOnly);
+      setAuditFormReadonly(false);
       showMask("auditModalMask");
     }
 
@@ -2632,13 +2638,14 @@
       const row = records.find((r) => r.id === auditTargetId);
       if (!row) return;
 
-      const status = document.getElementById("auditStatus").value;
+      const isEditMode = auditMode === "edit";
+      const status = isEditMode ? "待审核" : document.getElementById("auditStatus").value;
       const platform = document.getElementById("auditPlatform").value;
       const site = document.getElementById("auditSite").value;
       const productId = document.getElementById("auditProductId").value.trim();
       const remark = document.getElementById("auditRemark").value.trim();
       const items = collectSkuRows("auditSkuRows");
-      const user = "张管理";
+      const user = isEditMode ? row.creator || "李婷" : "张管理";
       const time = nowStr();
 
       if (!platform) {
@@ -2667,7 +2674,7 @@
           return;
         }
       }
-      if (status === "拒绝" && !remark) {
+      if (!isEditMode && status === "拒绝" && !remark) {
         alert("拒绝时请填写备注");
         return;
       }
@@ -2684,8 +2691,9 @@
       row.remark = remark;
       row.auditor = status === "审核通过" || status === "拒绝" ? user : "";
 
-      const actionText =
-        status === "审核通过"
+      const actionText = isEditMode
+        ? `编辑限价：平台=${platform}，站点=${site}，产品ID=${productId}，共${items.length}个ERPSKU，状态改为待审核`
+        : status === "审核通过"
           ? `审核通过：平台=${platform}，站点=${site}，产品ID=${productId}，共${items.length}个ERPSKU`
           : status === "拒绝"
             ? `审核拒绝：${remark}`
@@ -2713,10 +2721,10 @@
         return;
       }
       if (e.target.classList.contains("audit-btn")) {
-        openAuditModal(id, false);
+        openAuditModal(id, "audit");
       }
-      if (e.target.classList.contains("view-btn")) {
-        openAuditModal(id, true);
+      if (e.target.classList.contains("edit-btn")) {
+        openAuditModal(id, "edit");
       }
       if (e.target.classList.contains("log-btn")) {
         openLogModal(id);
